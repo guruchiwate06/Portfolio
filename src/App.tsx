@@ -75,9 +75,6 @@ export default function App() {
   useEffect(() => {
     // Load from persistence server first (handles port-change data loss)
     initFromServer().then(() => {
-      // Purge any legacy dummy projects or achievements from client storage
-      purgeAllDummyData();
-
       const savedAbout = localStorage.getItem('portfolio_about');
       const savedSkills = localStorage.getItem('portfolio_skills');
       if (savedAbout) setAboutText(savedAbout);

@@ -147,9 +147,6 @@ export default function AdminPanel() {
     });
 
     initFromServer().then(() => {
-      // Purge any legacy dummy data
-      purgeAllDummyData();
-
       const loadedSettings = getSettings();
       setSettingsState(loadedSettings);
       if (loadedSettings.cvUrl && !loadedSettings.cvUrl.startsWith('data:')) {
@@ -416,6 +413,7 @@ export default function AdminPanel() {
         projectId: achievementForm.projectId || undefined,
         externalUrl: achievementForm.externalUrl || undefined,
         credentialId: achievementForm.credentialId || undefined,
+        imageUrl: achievementForm.imageUrl || undefined,
         reviewStatus: 'approved',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

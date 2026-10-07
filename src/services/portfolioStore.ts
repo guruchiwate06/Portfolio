@@ -96,8 +96,7 @@ export function isDummyProject(p: { id?: string; title?: string; overrides?: { t
 /**
  * Detects whether an achievement is a legacy dummy item
  */
-export function isDummyAchievement(a: { id?: string; title?: string }): boolean {
-  const dummyIds = ['ach-01', 'ach-02', 'ach-03', 'ach-04'];
+export function isDummyAchievement(a: { id?: string; title?: string; source?: string }): boolean {
   const dummyTitles = [
     'adaptive neural routing',
     'nextgen autonomous ai',
@@ -105,8 +104,7 @@ export function isDummyAchievement(a: { id?: string; title?: string }): boolean 
     'excellence in machine learning architecture award'
   ];
   const title = (a.title || '').toLowerCase().trim();
-  const id = (a.id || '').toLowerCase().trim();
-  return dummyIds.includes(id) || dummyTitles.some(d => title.includes(d));
+  return dummyTitles.some(d => title.includes(d));
 }
 
 /**
