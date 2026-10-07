@@ -27,7 +27,29 @@ export interface AchievementData {
   date: string;
   summary: string;
   badgeText: string;
+  imageUrl?: string;
 }
 
-// Default achievements start empty; populated only from user-authorized achievements
-export const defaultAchievements: AchievementData[] = [];
+// Default verified achievements with permanent asset paths
+export const defaultAchievements: AchievementData[] = [
+  {
+    id: 'ach-kdu-global-2026',
+    category: 'Milestone',
+    title: 'Global Immersion Program — Exchange Semester in South Korea',
+    issuerOrVenue: 'Kyungdong University Global (KDU Global), South Korea',
+    date: '2026',
+    summary: 'Completed a four-month exchange semester at KDU Global, gaining international exposure through academic experiences, cultural activities, global networking, and personal and professional growth.',
+    badgeText: 'Global Exchange',
+    imageUrl: '/achievements/kdu-global-exchange.jpg'
+  },
+  {
+    id: 'ach-gdgoc-hackathon-2026',
+    category: 'Hackathon',
+    title: '3rd Place — 2026 Korea x Japan GDGoC Hackathon (The Bridge Hackathon)',
+    issuerOrVenue: 'Korea University, Seoul • Google Developer Groups on Campus',
+    date: '2026',
+    summary: 'Won 3rd Place (₩300,000 KRW prize) at the prestigious 2026 Korea x Japan GDGoC Hackathon in Seoul, competing amongst top universities across Asia.',
+    badgeText: '3rd Place Winner (₩300,000 KRW)',
+    imageUrl: '/achievements/gdgoc-hackathon-seoul.jpg'
+  }
+];

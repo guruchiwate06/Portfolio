@@ -274,6 +274,7 @@ export function getAchievements(): AchievementItem[] {
       date: item.date,
       summary: item.summary,
       badgeText: item.badgeText,
+      imageUrl: item.imageUrl,
       isVisible: true,
       isFeatured: idx === 0,
       order: idx,
@@ -304,7 +305,8 @@ export function saveAchievements(items: AchievementItem[]): void {
       issuerOrVenue: a.issuerOrVenue,
       date: a.date,
       summary: a.summary,
-      badgeText: a.badgeText
+      badgeText: a.badgeText,
+      imageUrl: a.imageUrl
     }));
     localStorage.setItem(STORAGE_KEYS.LEGACY_ACHIEVEMENTS, JSON.stringify(legacyCompatible));
   } catch (err) {
@@ -573,7 +575,8 @@ export async function initFromServer(): Promise<boolean> {
       localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, JSON.stringify(data.achievements));
       const legacyCompatible = data.achievements.map((a: AchievementItem) => ({
         id: a.id, category: a.category, title: a.title,
-        issuerOrVenue: a.issuerOrVenue, date: a.date, summary: a.summary, badgeText: a.badgeText
+        issuerOrVenue: a.issuerOrVenue, date: a.date, summary: a.summary, badgeText: a.badgeText,
+        imageUrl: a.imageUrl
       }));
       localStorage.setItem(STORAGE_KEYS.LEGACY_ACHIEVEMENTS, JSON.stringify(legacyCompatible));
     }
