@@ -716,6 +716,17 @@ export default function AdminPanel() {
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300">
                   v2.0
                 </span>
+                {isServerMode() ? (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-green-950/80 border border-green-500/40 text-green-300 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                    Backend Connected
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-yellow-950/80 border border-yellow-500/40 text-yellow-300 flex items-center gap-1" title="Running in standalone mode. Edits save to local storage.">
+                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                    Local Storage Mode
+                  </span>
+                )}
               </div>
               <p className="text-xs text-cyan-200/50 font-mono mt-0.5">
                 GitHub sync @{settings.githubUsername} • LinkedIn Compliance Active

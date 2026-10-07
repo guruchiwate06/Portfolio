@@ -1,8 +1,9 @@
 /**
  * Portfolio API Client
  *
- * Talks to the Express persistence server with secure token-based authentication.
- * Falls back gracefully to localStorage if the server is unreachable or offline.
+ * Supports both:
+ * 1. Full-Stack Mode: Talks to Express persistence server with token-based authentication.
+ * 2. Standalone Mode: Smooth fallback to client-side localStorage persistence when server is offline or statically hosted.
  */
 
 // Dynamically determine backend URL (can be customized via VITE_BACKEND_URL)
@@ -15,6 +16,26 @@ const SERVER_URL = (
 
 let serverAvailable: boolean | null = null; // null = not yet checked
 const TOKEN_KEY = 'portfolio_admin_token';
+
+async function computeHash(str: string): Promise<string> {
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch {
+    return '';
+  }
+}
+
+function getExpectedHash(): string {
+  try {
+    const custom = localStorage.getItem('portfolio_admin_custom_hash');
+    if (custom) return custom;
+  } catch {}
+  return typeof __ADMIN_PASS_HASH__ !== 'undefined' ? __ADMIN_PASS_HASH__ : '';
+}
 
 export function getAuthToken(): string | null {
   try {
@@ -38,18 +59,16 @@ export function clearAuthToken() {
 
 export async function checkServer(): Promise<boolean> {
   if (!SERVER_URL && typeof window !== 'undefined' && !window.location.origin.includes('localhost')) {
-    // If no backend URL configured in production, server mode is disabled
     serverAvailable = false;
     return false;
   }
-  if (serverAvailable !== null) return serverAvailable;
   try {
-    const res = await fetch(`${SERVER_URL}/api/health`, { signal: AbortSignal.timeout(1000) });
+    const res = await fetch(`${SERVER_URL}/api/health`, { signal: AbortSignal.timeout(800) });
     serverAvailable = res.ok;
   } catch {
     serverAvailable = false;
   }
-  return serverAvailable;
+  return serverAvailable === true;
 }
 
 /** Reset the server availability check */
@@ -58,41 +77,49 @@ export function resetServerCheck() {
 }
 
 /**
- * Authenticate with the server using the master password.
+ * Authenticate with the master password.
+ * Works seamlessly whether the Express server is running or offline.
  */
-export async function apiLogin(password: string): Promise<{ success: boolean; error?: string }> {
+export async function apiLogin(password: string): Promise<{ success: boolean; mode?: 'server' | 'standalone'; error?: string }> {
   const isUp = await checkServer();
-  if (!isUp) {
-    return {
-      success: false,
-      error: 'Backend persistence server is offline or unreachable.',
-    };
-  }
+  
+  if (isUp) {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
 
-  try {
-    const res = await fetch(`${SERVER_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    });
+      const data = await res.json().catch(() => ({}));
 
-    const data = await res.json().catch(() => ({}));
+      if (res.ok && data.token) {
+        setAuthToken(data.token);
+        return { success: true, mode: 'server' };
+      }
 
-    if (res.ok && data.token) {
-      setAuthToken(data.token);
-      return { success: true };
+      return { 
+        success: false, 
+        error: data.error || `Authentication failed (${res.status})` 
+      };
+    } catch {
+      // Network glitch, proceed to standalone fallback
     }
-
-    return { 
-      success: false, 
-      error: data.error || `Authentication failed (${res.status})` 
-    };
-  } catch (err: any) {
-    return { 
-      success: false, 
-      error: err.message || 'Network error connecting to auth server.' 
-    };
   }
+
+  // Standalone mode fallback (e.g. running 'npm run dev' alone or static hosting on Vercel/GitHub Pages)
+  const hash = await computeHash(password);
+  const expectedHash = getExpectedHash();
+
+  if (expectedHash && hash === expectedHash) {
+    setAuthToken('standalone_local_session');
+    return { success: true, mode: 'standalone' };
+  }
+
+  return {
+    success: false,
+    error: 'Incorrect password. Access denied.',
+  };
 }
 
 /**
@@ -104,41 +131,38 @@ export async function apiVerifyAuth(): Promise<boolean> {
 
   const isUp = await checkServer();
   if (!isUp) {
-    // In offline mode, token existence is sufficient for local preview
-    return false;
+    // In standalone offline mode, token existence is sufficient
+    return true;
   }
 
   try {
     const res = await fetch(`${SERVER_URL}/api/auth/verify`, {
       headers: { Authorization: `Bearer ${token}` },
-      signal: AbortSignal.timeout(1500),
+      signal: AbortSignal.timeout(1200),
     });
     if (!res.ok) {
+      if (token === 'standalone_local_session') return true;
       clearAuthToken();
       return false;
     }
     const data = await res.json();
-    if (!data.ok) {
-      clearAuthToken();
-      return false;
-    }
-    return true;
+    return !!data.ok;
   } catch {
-    return false;
+    return true;
   }
 }
 
 /**
- * Log out and invalidate server session.
+ * Log out and invalidate session.
  */
 export async function apiLogout(): Promise<void> {
   const token = getAuthToken();
-  if (token && (await checkServer())) {
+  if (token && token !== 'standalone_local_session' && (await checkServer())) {
     try {
       await fetch(`${SERVER_URL}/api/auth/logout`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
-        signal: AbortSignal.timeout(1000),
+        signal: AbortSignal.timeout(800),
       });
     } catch {}
   }
@@ -146,32 +170,47 @@ export async function apiLogout(): Promise<void> {
 }
 
 /**
- * Change the master password securely on the server.
+ * Change the master password (works in both server and standalone mode).
  */
 export async function apiChangePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
-  const token = getAuthToken();
-  if (!token) {
-    return { success: false, error: 'Not authenticated.' };
+  const isUp = await checkServer();
+  if (isUp) {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${SERVER_URL}/api/auth/change-password`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.token) {
+        setAuthToken(data.token);
+        return { success: true };
+      }
+      return { success: false, error: data.error || 'Password update failed.' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error updating password.' };
+    }
   }
 
+  // Standalone offline password change
+  const currentHash = await computeHash(currentPassword);
+  if (currentHash !== getExpectedHash()) {
+    return { success: false, error: 'Current password incorrect.' };
+  }
+  if (!newPassword || newPassword.length < 8) {
+    return { success: false, error: 'New password must be at least 8 characters long.' };
+  }
+  const newHash = await computeHash(newPassword);
   try {
-    const res = await fetch(`${SERVER_URL}/api/auth/change-password`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ currentPassword, newPassword }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data.token) {
-      setAuthToken(data.token);
-      return { success: true };
-    }
-    return { success: false, error: data.error || 'Password update failed.' };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Network error updating password.' };
+    localStorage.setItem('portfolio_admin_custom_hash', newHash);
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Could not write to local storage.' };
   }
 }
 
@@ -209,7 +248,7 @@ export async function apiSet(key: string, value: any): Promise<void> {
     const token = getAuthToken();
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) {
+      if (token && token !== 'standalone_local_session') {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
