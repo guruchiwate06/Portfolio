@@ -1,5 +1,5 @@
 import { Renderer, Program, Mesh, Color, Triangle } from 'ogl';
-import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useEffect, useRef, useMemo, useCallback, CSSProperties } from 'react';
 import './FaultyTerminal.css';
 
 const vertexShader = `
@@ -239,7 +239,7 @@ interface FaultyTerminalProps {
   pageLoadAnimation?: boolean;
   brightness?: number;
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 export default function FaultyTerminal({
@@ -258,7 +258,7 @@ export default function FaultyTerminal({
   tint = '#ffffff',
   mouseReact = true,
   mouseStrength = 0.2,
-  dpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 2),
+  dpr = 1,
   pageLoadAnimation = true,
   brightness = 1,
   className,

@@ -53,16 +53,19 @@
 
 @layer base {
   body {
-    @apply transition-all duration-1000 overflow-x-hidden relative bg-background text-foreground;
+    @apply overflow-x-hidden relative bg-background text-foreground;
     color: var(--text-primary);
     background-color: var(--bg-primary);
     font-family: var(--font-body);
+    transition-property: color, background-color;
+    transition-duration: 700ms;
     transition-timing-function: var(--theme-transition);
   }
 
   h1, h2, h3, h4 {
-    @apply transition-all duration-1000;
     font-family: var(--font-heading);
+    transition-property: color;
+    transition-duration: 700ms;
     transition-timing-function: var(--theme-transition);
   }
   * {
@@ -77,6 +80,7 @@
   background-image: radial-gradient(var(--color-stone-ink) 0.5px, transparent 0.5px);
   background-size: 30px 30px;
   opacity: 0.05;
+  transform: translateZ(0);
 }
 
 .pillar-texture {
@@ -87,14 +91,19 @@
   @apply fixed inset-0 pointer-events-none opacity-[0.05] z-0;
   background-image: radial-gradient(circle at 10% 10%, var(--accent-primary) 1px, transparent 1px);
   background-size: 40px 40px;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .stone-card {
-  @apply backdrop-blur-md border shadow-xl relative transition-all duration-700 overflow-hidden;
+  @apply border shadow-xl relative overflow-hidden;
   background: var(--card-bg);
   border-color: var(--card-border);
   box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.05);
+  transition-property: border-color, background-color, box-shadow;
+  transition-duration: 500ms;
   transition-timing-function: var(--theme-transition);
+  transform: translateZ(0);
 }
 
 .theme-modern .stone-card {

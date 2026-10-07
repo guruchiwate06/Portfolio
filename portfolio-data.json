@@ -1,0 +1,135 @@
+{
+  "projectsConfig": [
+    {
+      "id": "gh-Flowgen",
+      "source": "github",
+      "repoName": "Flowgen",
+      "isSelected": true,
+      "isVisible": true,
+      "order": 0,
+      "isFeatured": false,
+      "isPoC": false,
+      "overrides": {
+        "title": "Flowgen",
+        "problem": "AI-powered content workflow management platform for creators.",
+        "approach": "Engineered modular architecture in JavaScript.",
+        "outcome": "Maintained on GitHub with 0 stars.",
+        "tech": "JavaScript",
+        "liveDemoUrl": "https://flowgen-olive.vercel.app/",
+        "githubUrl": "https://github.com/guruchiwate06/Flowgen",
+        "isPoC": false
+      },
+      "createdAt": "2026-10-06T16:24:07.408Z",
+      "updatedAt": "2026-10-06T16:29:52.232Z"
+    },
+    {
+      "id": "gh-PATH_RL",
+      "source": "github",
+      "repoName": "PATH_RL",
+      "isSelected": true,
+      "isVisible": true,
+      "order": 1,
+      "isFeatured": false,
+      "isPoC": false,
+      "overrides": {
+        "title": "PATH RL",
+        "problem": "Add custom problem description...",
+        "approach": "Engineered modular architecture in Python.",
+        "outcome": "Maintained on GitHub with 0 stars.",
+        "tech": "Python",
+        "githubUrl": "https://github.com/guruchiwate06/PATH_RL",
+        "isPoC": false
+      },
+      "createdAt": "2026-10-06T16:24:09.066Z",
+      "updatedAt": "2026-10-06T16:24:09.066Z"
+    },
+    {
+      "id": "gh-LUNAR",
+      "source": "github",
+      "repoName": "LUNAR",
+      "isSelected": true,
+      "isVisible": true,
+      "order": 2,
+      "isFeatured": false,
+      "isPoC": false,
+      "overrides": {
+        "title": "LUNAR",
+        "problem": "Add custom problem description...",
+        "approach": "Engineered modular architecture in Python.",
+        "outcome": "Maintained on GitHub with 0 stars.",
+        "tech": "Python",
+        "githubUrl": "https://github.com/guruchiwate06/LUNAR",
+        "isPoC": false
+      },
+      "createdAt": "2026-10-06T16:24:13.409Z",
+      "updatedAt": "2026-10-06T16:24:13.409Z"
+    },
+    {
+      "id": "gh-CircletoSearch",
+      "source": "github",
+      "repoName": "CircletoSearch",
+      "isSelected": true,
+      "isVisible": true,
+      "order": 3,
+      "isFeatured": false,
+      "isPoC": false,
+      "overrides": {
+        "title": "Circleto Search",
+        "problem": "Add custom problem description...",
+        "approach": "Engineered modular architecture in JavaScript.",
+        "outcome": "Maintained on GitHub with 0 stars.",
+        "tech": "JavaScript",
+        "githubUrl": "https://github.com/guruchiwate06/CircletoSearch",
+        "isPoC": false
+      },
+      "createdAt": "2026-10-06T16:24:15.878Z",
+      "updatedAt": "2026-10-06T16:24:15.878Z"
+    },
+    {
+      "id": "gh-plane-plant-UMLintegration",
+      "source": "github",
+      "repoName": "plane-plant-UMLintegration",
+      "isSelected": true,
+      "isVisible": true,
+      "order": 4,
+      "isFeatured": false,
+      "isPoC": false,
+      "overrides": {
+        "title": "Plane Plant UMLintegration",
+        "problem": "Add custom problem description...",
+        "approach": "Engineered modular architecture in Python.",
+        "outcome": "Maintained on GitHub with 0 stars.",
+        "tech": "Python",
+        "githubUrl": "https://github.com/guruchiwate06/plane-plant-UMLintegration",
+        "isPoC": false
+      },
+      "createdAt": "2026-10-06T16:24:17.240Z",
+      "updatedAt": "2026-10-06T16:24:17.240Z"
+    },
+    {
+      "id": "gh-Portfolio",
+      "source": "github",
+      "repoName": "Portfolio",
+      "isSelected": true,
+      "isVisible": true,
+      "order": 5,
+      "isFeatured": false,
+      "isPoC": false,
+      "overrides": {
+        "title": "Portfolio",
+        "problem": "A personal portfolio website showcasing my projects, achievements, technical skills, and journey as an AI & ML student and developer.",
+        "approach": "Engineered modular architecture in TypeScript.",
+        "outcome": "Maintained on GitHub with 0 stars.",
+        "tech": "FRONTEND • PERSONAL-WEBSITE • PORTFOLIO • REACT • TYPESCRIPT • VITE • WEB-DEVELOPMENT",
+        "githubUrl": "https://github.com/guruchiwate06/Portfolio",
+        "isPoC": false
+      },
+      "createdAt": "2026-10-06T16:51:12.173Z",
+      "updatedAt": "2026-10-06T16:51:12.173Z"
+    }
+  ],
+  "achievements": [],
+  "settings": null,
+  "about": null,
+  "skills": null
+}
