@@ -63,8 +63,20 @@ export default function App() {
   const [theme, setTheme] = useState<'ancient' | 'modern'>('ancient');
   const [aboutText, setAboutText] = useState<string | null>(null);
   const [skills, setSkills] = useState<string[]>(defaultSkills);
-  const [projects, setProjects] = useState<ResolvedProject[]>([]);
-  const [achievements, setAchievements] = useState<AchievementItem[]>([]);
+  const [projects, setProjects] = useState<ResolvedProject[]>(() => {
+    try {
+      return resolvePublicProjects(getProjectsConfig(), []);
+    } catch {
+      return [];
+    }
+  });
+  const [achievements, setAchievements] = useState<AchievementItem[]>(() => {
+    try {
+      return getAchievements().filter(a => a.isVisible !== false).sort((a, b) => a.order - b.order);
+    } catch {
+      return [];
+    }
+  });
   const [cvUrl, setCvUrl] = useState<string>('/Resume.pdf');
   const [cvFileName, setCvFileName] = useState<string>('Rajguru_Chiwate_Resume.pdf');
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);

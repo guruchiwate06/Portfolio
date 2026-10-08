@@ -131,6 +131,23 @@
   ],
   "achievements": [
     {
+      "id": "ach-gdgoc-hackathon-2026",
+      "source": "manual",
+      "category": "Hackathon",
+      "title": "Google for Developers Bridge Hackathon Korea × Japan 2026 — 3rd Place",
+      "issuerOrVenue": "Korea University, Seoul • Google for Developers",
+      "date": "2026",
+      "summary": "Secured 3rd place and a 300,000 KRW prize in an international hackathon, collaborating with a randomly assigned team under high-pressure development conditions.",
+      "badgeText": "3rd Place Winner (₩300,000 KRW)",
+      "imageUrl": "/achievements/gdgoc-hackathon-seoul.jpg",
+      "isVisible": true,
+      "isFeatured": true,
+      "order": 0,
+      "reviewStatus": "approved",
+      "createdAt": "2026-10-08T00:55:00.000Z",
+      "updatedAt": "2026-10-08T20:50:00.000Z"
+    },
+    {
       "id": "ach-kdu-global-2026",
       "source": "manual",
       "category": "Milestone",
@@ -142,27 +159,10 @@
       "imageUrl": "/achievements/kdu-global-exchange.jpg",
       "isVisible": true,
       "isFeatured": true,
-      "order": 0,
-      "reviewStatus": "approved",
-      "createdAt": "2026-10-08T00:55:00.000Z",
-      "updatedAt": "2026-10-08T00:55:00.000Z"
-    },
-    {
-      "id": "ach-gdgoc-hackathon-2026",
-      "source": "manual",
-      "category": "Hackathon",
-      "title": "3rd Place — 2026 Korea x Japan GDGoC Hackathon (The Bridge Hackathon)",
-      "issuerOrVenue": "Korea University, Seoul • Google Developer Groups on Campus",
-      "date": "2026",
-      "summary": "Won 3rd Place (₩300,000 KRW prize) at the prestigious 2026 Korea x Japan GDGoC Hackathon in Seoul, competing amongst top universities across Asia.",
-      "badgeText": "3rd Place Winner (₩300,000 KRW)",
-      "imageUrl": "/achievements/gdgoc-hackathon-seoul.jpg",
-      "isVisible": true,
-      "isFeatured": true,
       "order": 1,
       "reviewStatus": "approved",
       "createdAt": "2026-10-08T00:55:00.000Z",
-      "updatedAt": "2026-10-08T00:55:00.000Z"
+      "updatedAt": "2026-10-08T20:50:00.000Z"
     }
   ],
   "settings": {

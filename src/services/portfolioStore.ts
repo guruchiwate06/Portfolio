@@ -259,31 +259,18 @@ export function saveProjectsConfig(configs: ProjectConfig[]): void {
 export function getAchievements(): AchievementItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.ACHIEVEMENTS);
+    let userItems: AchievementItem[] = [];
     if (raw) {
-      const parsed: AchievementItem[] = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        const cleaned = parsed.filter(a => !isDummyAchievement(a));
-        if (cleaned.length !== parsed.length) {
-          saveAchievements(cleaned);
-        }
-        return cleaned;
-      }
-    }
-
-    // Check legacy storage
-    const legacyRaw = localStorage.getItem(STORAGE_KEYS.LEGACY_ACHIEVEMENTS);
-    let seedAchievements: AchievementData[] = defaultAchievements.filter(a => !isDummyAchievement(a));
-    if (legacyRaw) {
       try {
-        const parsedLegacy = JSON.parse(legacyRaw);
-        if (Array.isArray(parsedLegacy) && parsedLegacy.length > 0) {
-          seedAchievements = parsedLegacy.filter(a => !isDummyAchievement(a));
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          userItems = parsed.filter(a => !isDummyAchievement(a));
         }
       } catch {}
     }
 
-    // Seed initial achievements
-    const initialItems: AchievementItem[] = seedAchievements.map((item, idx) => ({
+    // Default seeded achievements from portfolio-data.json
+    const defaultItems: AchievementItem[] = defaultAchievements.map((item, idx) => ({
       id: item.id || `ach-${idx + 1}`,
       source: 'manual',
       category: item.category,
@@ -294,15 +281,45 @@ export function getAchievements(): AchievementItem[] {
       badgeText: item.badgeText,
       imageUrl: item.imageUrl,
       isVisible: true,
-      isFeatured: idx === 0,
+      isFeatured: true,
       order: idx,
       reviewStatus: 'approved',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }));
 
-    saveAchievements(initialItems);
-    return initialItems;
+    if (userItems.length === 0) {
+      saveAchievements(defaultItems);
+      return defaultItems;
+    }
+
+    // Merge default items with user items:
+    // Update default items with any changes in code, and retain any user-added achievements
+    const itemMap = new Map<string, AchievementItem>();
+    for (const def of defaultItems) {
+      itemMap.set(def.id, def);
+    }
+
+    for (const u of userItems) {
+      if (itemMap.has(u.id)) {
+        // If it's a default item, keep updated verified content from code
+        const def = itemMap.get(u.id)!;
+        itemMap.set(u.id, {
+          ...def,
+          ...u,
+          title: def.title,
+          summary: def.summary,
+          issuerOrVenue: def.issuerOrVenue,
+          imageUrl: def.imageUrl || u.imageUrl,
+          badgeText: def.badgeText || u.badgeText,
+        });
+      } else {
+        itemMap.set(u.id, u);
+      }
+    }
+
+    const merged = Array.from(itemMap.values()).sort((a, b) => a.order - b.order);
+    return merged;
   } catch (err) {
     console.error('Failed to get achievements:', err);
     return [];
