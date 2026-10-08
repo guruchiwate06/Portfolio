@@ -7,7 +7,7 @@ import { motion } from 'motion/react';
 import { ReactNode, useRef, useState, useEffect, useMemo } from 'react';
 import { Cpu, Zap, Menu, X } from 'lucide-react';
 
-const JOINING_HANDS_BG = new URL('../assets/ChatGPT Image Apr 27, 2026, 09_01_05 PM.png', import.meta.url).href;
+const JOINING_HANDS_BG = new URL('../assets/ancient-joining-hands.webp', import.meta.url).href;
 
 interface TempleFrameProps {
   children: ReactNode;

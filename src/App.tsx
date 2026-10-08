@@ -49,11 +49,7 @@ import {
   purgeAllDummyData,
   initFromServer
 } from './services/portfolioStore';
-import { fetchGitHubRepos, getCachedRepos } from './services/githubService';
-import AVATAR_FIGURE_URL from './assets/avatar-action-figure.png';
-
-// Thematic cinematic assets
-const ANCIENT_LAUREL_URL = 'https://pngimg.com/uploads/laurel_wreath/laurel_wreath_PNG34.png';
+import AVATAR_FIGURE_URL from './assets/avatar-action-figure.webp';
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -352,6 +348,8 @@ export default function App() {
                         src={AVATAR_FIGURE_URL} 
                         alt="" 
                         aria-hidden="true"
+                        loading="eager"
+                        decoding="async"
                         className={`w-full h-auto object-contain pointer-events-none select-none transition-all duration-700 ${
                           theme === 'ancient' 
                             ? 'filter brightness-0 blur-[8px] opacity-45 translate-y-2' 
@@ -373,7 +371,9 @@ export default function App() {
                       {/* 3D Action Figure Cutout Image */}
                       <img 
                         src={AVATAR_FIGURE_URL} 
-                        alt="Rajguru Chiwate 3D Figure" 
+                        alt="Rajguru Chiwate 3D Figure"
+                        loading="eager"
+                        decoding="async" 
                         className={`w-full h-auto object-contain pointer-events-none ${
                           theme === 'ancient'
                             ? 'filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.2)]'
