@@ -69,7 +69,7 @@ export default function App() {
   const [projects, setProjects] = useState<ResolvedProject[]>([]);
   const [achievements, setAchievements] = useState<AchievementItem[]>([]);
   const [cvUrl, setCvUrl] = useState<string>('/Resume.pdf');
-  const [cvFileName, setCvFileName] = useState<string>('Resume.pdf');
+  const [cvFileName, setCvFileName] = useState<string>('Rajguru_Chiwate_Resume.pdf');
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
   useEffect(() => {
@@ -126,6 +126,37 @@ export default function App() {
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'ancient' ? 'modern' : 'ancient');
+  };
+
+  const handleDownloadCv = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const targetUrl = cvUrl || '/Resume.pdf';
+    const targetName = cvFileName || 'Rajguru_Chiwate_Resume.pdf';
+
+    // If base64 data URL, download via Blob to prevent browser data URL download blocking
+    if (targetUrl.startsWith('data:')) {
+      e.preventDefault();
+      try {
+        const parts = targetUrl.split(',');
+        const mime = parts[0].match(/:(.*?);/)?.[1] || 'application/pdf';
+        const binary = atob(parts[1]);
+        const array = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          array[i] = binary.charCodeAt(i);
+        }
+        const blob = new Blob([array], { type: mime });
+        const blobUrl = URL.createObjectURL(blob);
+        const tempLink = document.createElement('a');
+        tempLink.href = blobUrl;
+        tempLink.download = targetName;
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      } catch (err) {
+        console.error('Failed blob download, opening directly', err);
+        window.open(targetUrl, '_blank');
+      }
+    }
   };
 
   const getAchievementIcon = (category: AchievementData['category']) => {
@@ -369,9 +400,10 @@ export default function App() {
                
                <motion.a 
                  href={cvUrl || "/Resume.pdf"}
-                 download={cvUrl && cvUrl.startsWith('http') ? undefined : (cvFileName || "Resume.pdf")}
+                 download={cvUrl && cvUrl.startsWith('http') ? undefined : (cvFileName || "Rajguru_Chiwate_Resume.pdf")}
                  target={cvUrl && cvUrl.startsWith('http') ? "_blank" : undefined}
                  rel="noreferrer"
+                 onClick={handleDownloadCv}
                  whileHover={{ scale: 1.05 }}
                  whileTap={{ scale: 0.95 }}
                  className={`mt-4 sm:mt-5 px-7 py-3 inline-flex items-center gap-2 uppercase tracking-widest text-xs font-bold transition-all duration-700 z-50 cursor-pointer ${
