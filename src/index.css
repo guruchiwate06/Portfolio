@@ -113,7 +113,8 @@
 
 .stone-card::after {
   content: '';
-  @apply absolute inset-0 bg-gradient-to-tr from-stone-500/5 to-transparent opacity-0 transition-opacity duration-500 hover:opacity-100;
+  @apply absolute inset-0 bg-gradient-to-tr from-stone-500/5 to-transparent opacity-0 transition-opacity duration-500 hover:opacity-100 pointer-events-none;
+  pointer-events: none;
 }
 
 .terminal-parchment {

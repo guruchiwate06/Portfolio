@@ -170,7 +170,23 @@ export function getProjectsConfig(): ProjectConfig[] {
       const parsed: ProjectConfig[] = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         const cleaned = parsed.filter(p => !isDummyProject(p));
-        if (cleaned.length !== parsed.length) {
+        const defaultMap = new Map(defaultProjects.map(dp => [dp.id, dp]));
+        let modified = false;
+        for (const p of cleaned) {
+          const def = defaultMap.get(p.id);
+          if (def) {
+            p.overrides = p.overrides || {};
+            if (def.liveDemoUrl && (!p.overrides.liveDemoUrl || p.overrides.liveDemoUrl === '')) {
+              p.overrides.liveDemoUrl = def.liveDemoUrl;
+              modified = true;
+            }
+            if (def.githubUrl && (!p.overrides.githubUrl || p.overrides.githubUrl === '')) {
+              p.overrides.githubUrl = def.githubUrl;
+              modified = true;
+            }
+          }
+        }
+        if (modified || cleaned.length !== parsed.length) {
           saveProjectsConfig(cleaned);
         }
         return cleaned;
@@ -355,9 +371,9 @@ export function resolvePublicProjects(
       ? repo.topics.slice(0, 3).map(t => t.toUpperCase()).join(' • ') 
       : (repo?.language || 'Python • PyTorch'));
     const isPoC = ov.isPoC ?? c.isPoC ?? (repo ? (repo.name.toLowerCase().includes('poc') || repo.name.toLowerCase().includes('research')) : false);
-    const isFeatured = ov.imageUrl ? true : (c.isFeatured ?? false);
-    const githubUrl = ov.githubUrl?.trim() || repo?.html_url;
-    const liveDemoUrl = ov.liveDemoUrl?.trim() || repo?.homepage || undefined;
+    const def = defaultProjects.find(dp => dp.id === c.id);
+    const githubUrl = ov.githubUrl?.trim() || repo?.html_url || def?.githubUrl || undefined;
+    const liveDemoUrl = ov.liveDemoUrl?.trim() || repo?.homepage || def?.liveDemoUrl || undefined;
 
     return {
       id: c.id,

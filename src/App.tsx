@@ -503,7 +503,11 @@ export default function App() {
                 key={proj.id}
                 {...fadeUp}
                 whileHover={{ y: -6 }}
-                className={`stone-card p-8 transition-all duration-700 relative group overflow-hidden flex flex-col justify-between ${
+                onClick={() => {
+                  const targetUrl = proj.liveDemoUrl || proj.githubUrl;
+                  if (targetUrl) window.open(targetUrl, '_blank', 'noopener,noreferrer');
+                }}
+                className={`stone-card p-8 transition-all duration-700 relative group overflow-hidden flex flex-col justify-between cursor-pointer ${
                   theme === 'ancient' 
                   ? 'bg-white/50 border border-black/5 border-l-4 border-l-stone-ink shadow-lg hover:shadow-2xl' 
                   : 'bg-black/40 border border-blue-500/30 rounded-2xl hover:border-cyan-400 hover:shadow-[0_0_25px_rgba(0,242,255,0.15)]'
@@ -549,6 +553,7 @@ export default function App() {
                         <a 
                           href={proj.githubUrl} 
                           target="_blank" 
+                          onClick={(e) => e.stopPropagation()} 
                           rel="noreferrer" 
                           aria-label="GitHub Repository"
                           className={`p-1.5 rounded transition-all hover:scale-110 ${
@@ -562,6 +567,7 @@ export default function App() {
                         <a 
                           href={proj.liveDemoUrl} 
                           target="_blank" 
+                          onClick={(e) => e.stopPropagation()} 
                           rel="noreferrer" 
                           aria-label="Live Demo"
                           className={`p-1.5 rounded transition-all hover:scale-110 ${
@@ -605,32 +611,36 @@ export default function App() {
                      Tech Stack: {proj.tech}
                    </span>
                    
-                   <div className="flex items-center gap-2 shrink-0">
+                   <div className="flex items-center gap-2 shrink-0 relative z-30">
                      {proj.liveDemoUrl ? (
                        <a 
                          href={proj.liveDemoUrl} 
                          target="_blank" 
                          rel="noopener noreferrer" 
-                         className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                         onClick={(e) => e.stopPropagation()}
+                         title={`Launch Live Demo: ${proj.liveDemoUrl}`}
+                         className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer relative z-30 ${
                            theme === 'ancient'
                              ? 'bg-gold-accent text-white hover:bg-gold-accent/90 shadow-gold-accent/20'
-                             : 'bg-cyan-500/10 border border-cyan-400/50 text-cyan-300 hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_12px_rgba(0,242,255,0.4)]'
+                             : 'bg-cyan-500/20 border border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_15px_rgba(0,242,255,0.5)]'
                          }`}
                        >
-                         Launch <ExternalLink size={12} />
+                         Launch <ExternalLink size={13} />
                        </a>
                      ) : proj.githubUrl ? (
                        <a 
                          href={proj.githubUrl} 
                          target="_blank" 
                          rel="noopener noreferrer" 
-                         className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                         onClick={(e) => e.stopPropagation()}
+                         title={`Launch Repository: ${proj.githubUrl}`}
+                         className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer relative z-30 ${
                            theme === 'ancient'
-                             ? 'border border-gold-accent/60 text-gold-accent hover:bg-gold-accent hover:text-white'
-                             : 'border border-cyan-500/40 text-cyan-400 hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_12px_rgba(0,242,255,0.3)]'
+                             ? 'border border-gold-accent text-gold-accent hover:bg-gold-accent hover:text-white'
+                             : 'border border-cyan-400/60 text-cyan-400 hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_15px_rgba(0,242,255,0.4)]'
                          }`}
                        >
-                         Launch <ArrowRight size={12} />
+                         Launch <ArrowRight size={13} />
                        </a>
                      ) : (
                        <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
