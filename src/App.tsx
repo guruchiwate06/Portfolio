@@ -50,6 +50,7 @@ import {
   purgeAllDummyData,
   initFromServer
 } from './services/portfolioStore';
+import { subscribeToFirestore } from './services/firebaseService';
 import AVATAR_FIGURE_URL from './assets/avatar-action-figure.webp';
 
 const fadeUp = {
@@ -123,6 +124,19 @@ export default function App() {
           .catch(err => console.warn('Background GitHub sync note:', err));
       }
     });
+
+    const unsubscribeFirestore = subscribeToFirestore((cloudData) => {
+      if (Array.isArray(cloudData.achievements) && cloudData.achievements.length > 0) {
+        setAchievements(cloudData.achievements.filter(a => a.isVisible !== false).sort((a, b) => a.order - b.order));
+      }
+      if (Array.isArray(cloudData.projectsConfig) && cloudData.projectsConfig.length > 0) {
+        setProjects(resolvePublicProjects(cloudData.projectsConfig, []));
+      }
+    });
+
+    return () => {
+      unsubscribeFirestore();
+    };
   }, []);
 
   useEffect(() => {

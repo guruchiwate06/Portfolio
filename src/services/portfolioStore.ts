@@ -19,6 +19,11 @@ import {
   AchievementData 
 } from '../data';
 import { apiSet, SERVER_URL } from './portfolioApi';
+import { 
+  getPortfolioFromFirestore, 
+  saveToFirestore, 
+  isFirebaseConfigured 
+} from './firebaseService';
 
 const STORAGE_KEYS = {
   PROJECTS_CONFIG: 'portfolio_projects_config_v2',
@@ -71,6 +76,7 @@ export function saveSettings(settings: Partial<PortfolioSettings>): PortfolioSet
   apiSet('settings', updated).catch(err =>
     console.warn('Server save skipped (offline?):', err)
   );
+  saveToFirestore('settings', updated).catch(() => {});
   return updated;
 }
 
@@ -250,6 +256,7 @@ export function saveProjectsConfig(configs: ProjectConfig[]): void {
   apiSet('projectsConfig', configs).catch(err =>
     console.warn('Server save skipped (offline?):', err)
   );
+  saveToFirestore('projectsConfig', configs).catch(() => {});
 }
 
 /**
@@ -350,10 +357,11 @@ export function saveAchievements(items: AchievementItem[]): void {
       alert('Browser storage quota exceeded. The image file may be too large. Please use a compressed photo.');
     }
   }
-  // Also persist to server (fire-and-forget)
+  // Also persist to server & Firestore (fire-and-forget)
   apiSet('achievements', items).catch(err =>
     console.warn('Server save skipped (offline?):', err)
   );
+  saveToFirestore('achievements', items).catch(() => {});
 }
 
 /**
@@ -598,6 +606,43 @@ export function importPortfolioBackup(jsonString: string): boolean {
  * Returns true if server data was loaded, false if using local/default data.
  */
 export async function initFromServer(): Promise<boolean> {
+  // 1. Try Firebase Firestore Cloud Database first
+  if (isFirebaseConfigured) {
+    try {
+      const cloudData = await getPortfolioFromFirestore();
+      if (cloudData) {
+        if (Array.isArray(cloudData.achievements) && cloudData.achievements.length > 0) {
+          localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, JSON.stringify(cloudData.achievements));
+        }
+        if (Array.isArray(cloudData.projectsConfig) && cloudData.projectsConfig.length > 0) {
+          localStorage.setItem(STORAGE_KEYS.PROJECTS_CONFIG, JSON.stringify(cloudData.projectsConfig));
+        }
+        if (cloudData.settings) {
+          localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(cloudData.settings));
+        }
+        if (cloudData.about) {
+          localStorage.setItem(STORAGE_KEYS.ABOUT, cloudData.about);
+        }
+        if (cloudData.skills) {
+          localStorage.setItem(STORAGE_KEYS.SKILLS, JSON.stringify(cloudData.skills));
+        }
+        console.log('[portfolio] Successfully synced with Firebase Firestore.');
+        return true;
+      } else {
+        // Auto-seed Firestore on initial connect with existing achievements
+        const curAchievements = getAchievements();
+        const curProjects = getProjectsConfig();
+        const curSettings = getSettings();
+        saveToFirestore('achievements', curAchievements);
+        saveToFirestore('projectsConfig', curProjects);
+        saveToFirestore('settings', curSettings);
+      }
+    } catch (err) {
+      console.warn('[portfolio] Firestore cloud sync note:', err);
+    }
+  }
+
+  // 2. Fallback to local server / Vite dev persistence / portfolio-data.json
   const targetUrl = SERVER_URL ? `${SERVER_URL}/api/portfolio` : '/api/portfolio';
   try {
     const res = await fetch(targetUrl, {

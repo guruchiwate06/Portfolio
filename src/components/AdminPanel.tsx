@@ -41,6 +41,7 @@ import {
   defaultSkills 
 } from '../data';
 import { compressImage } from '../utils/imageCompressor';
+import { isFirebaseConfigured } from '../services/firebaseService';
 import { 
   Save, 
   Plus, 
@@ -2368,6 +2369,28 @@ export default function AdminPanel() {
                   )}
                 </form>
               </div>
+            </div>
+
+            {/* Cloud Database Integration */}
+            <div className="bg-black/50 border border-cyan-500/20 rounded-xl p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-cyan-500/10 pb-3">
+                <h2 className="text-lg font-mono text-cyan-300 uppercase tracking-wider flex items-center gap-2">
+                  <Sparkles size={18} /> Cloud Database (Firebase Firestore)
+                </h2>
+                <span className={`px-2.5 py-1 rounded font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${
+                  isFirebaseConfigured
+                    ? 'bg-emerald-950/80 border border-emerald-500/40 text-emerald-300'
+                    : 'bg-amber-950/80 border border-amber-500/40 text-amber-300'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${isFirebaseConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                  {isFirebaseConfigured ? 'Active & Synced' : 'Offline / Standalone'}
+                </span>
+              </div>
+              <p className="text-xs text-white/70">
+                {isFirebaseConfigured
+                  ? 'Real-time cloud database connected. Any achievement, project, or setting saved here is instantly updated live on Vercel across all devices.'
+                  : 'Currently operating in standalone/filesystem mode. To enable real-time cloud sync across all devices, configure Firebase Firestore environment variables (VITE_FIREBASE_*).'}
+              </p>
             </div>
 
             {/* Backup & Restore */}
