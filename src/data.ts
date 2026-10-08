@@ -86,6 +86,7 @@ export const defaultProjects: ProjectData[] = [
     tech: 'TypeScript • React • Vite',
     isPoC: false,
     repoName: 'Portfolio',
+    liveDemoUrl: 'https://rajguru-chiwate.vercel.app/',
     githubUrl: 'https://github.com/guruchiwate06/Portfolio'
   }
 ];

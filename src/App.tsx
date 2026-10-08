@@ -576,7 +576,18 @@ export default function App() {
                   
                   <h3 className={`text-xl font-bold mb-3 tracking-tight flex items-center gap-2 transition-colors duration-500 ${theme === 'ancient' ? 'font-primary text-stone-ink' : 'font-primary text-white'}`}>
                     <Code2 size={18} className={`transition-all -ml-6 group-hover:ml-0 ${theme === 'ancient' ? 'text-gold-accent opacity-0 group-hover:opacity-100' : 'text-cyan-400 opacity-0 group-hover:opacity-100'}`} />
-                    {proj.title}
+                    {(proj.liveDemoUrl || proj.githubUrl) ? (
+                      <a 
+                        href={proj.liveDemoUrl || proj.githubUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="hover:underline transition-colors"
+                      >
+                        {proj.title}
+                      </a>
+                    ) : (
+                      proj.title
+                    )}
                   </h3>
                   <div className={`text-sm leading-relaxed space-y-1.5 transition-colors duration-500 ${theme === 'ancient' ? 'text-stone-ink/80' : 'text-cyan-100/80'}`}>
                     <p><strong className="font-semibold opacity-90">Problem:</strong> {proj.problem}</p>
@@ -585,19 +596,46 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className={`mt-6 pt-4 border-t flex items-center justify-between transition-colors duration-500 ${
+                <div className={`mt-6 pt-4 border-t flex items-center justify-between gap-3 transition-colors duration-500 ${
                   theme === 'ancient' 
                     ? 'border-stone-ink/10 text-gold-accent' 
                     : 'border-cyan-500/20 text-cyan-400 font-mono text-[11px] uppercase tracking-widest'
                 }`}>
-                   <span className="font-semibold">Tech Stack: {proj.tech}</span>
-                   {proj.liveDemoUrl ? (
-                     <a href={proj.liveDemoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:underline">
-                       Launch <ArrowRight size={14} />
-                     </a>
-                   ) : (
-                     <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                   )}
+                   <span className="font-semibold text-xs truncate max-w-[55%] sm:max-w-[65%]" title={proj.tech}>
+                     Tech Stack: {proj.tech}
+                   </span>
+                   
+                   <div className="flex items-center gap-2 shrink-0">
+                     {proj.liveDemoUrl ? (
+                       <a 
+                         href={proj.liveDemoUrl} 
+                         target="_blank" 
+                         rel="noopener noreferrer" 
+                         className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                           theme === 'ancient'
+                             ? 'bg-gold-accent text-white hover:bg-gold-accent/90 shadow-gold-accent/20'
+                             : 'bg-cyan-500/10 border border-cyan-400/50 text-cyan-300 hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_12px_rgba(0,242,255,0.4)]'
+                         }`}
+                       >
+                         Launch <ExternalLink size={12} />
+                       </a>
+                     ) : proj.githubUrl ? (
+                       <a 
+                         href={proj.githubUrl} 
+                         target="_blank" 
+                         rel="noopener noreferrer" 
+                         className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                           theme === 'ancient'
+                             ? 'border border-gold-accent/60 text-gold-accent hover:bg-gold-accent hover:text-white'
+                             : 'border border-cyan-500/40 text-cyan-400 hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_12px_rgba(0,242,255,0.3)]'
+                         }`}
+                       >
+                         Launch <ArrowRight size={12} />
+                       </a>
+                     ) : (
+                       <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                     )}
+                   </div>
                 </div>
               </motion.div>
             ))}
