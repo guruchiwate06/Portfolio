@@ -29,7 +29,8 @@ import {
 import { TempleFrame } from './components/TempleFrame';
 import FaultyTerminal from './components/FaultyTerminal';
 import CurvedLoop from './components/CurvedLoop';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchGitHubRepos, getCachedRepos } from './services/githubService';
 import { 
   defaultSkills, 
   defaultProjects, 

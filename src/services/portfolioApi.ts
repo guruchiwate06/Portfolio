@@ -10,10 +10,7 @@ import { startRegistration, startAuthentication } from '@simplewebauthn/browser'
 
 // Dynamically determine backend URL (can be customized via VITE_BACKEND_URL)
 export const SERVER_URL = (
-  import.meta.env.VITE_BACKEND_URL || 
-  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:3999' 
-    : '')
+  import.meta.env.VITE_BACKEND_URL || ''
 ).replace(/\/$/, '');
 
 let serverAvailable: boolean | null = null; // null = not yet checked
@@ -60,10 +57,7 @@ export function clearAuthToken() {
 }
 
 export async function checkServer(): Promise<boolean> {
-  if (!SERVER_URL && typeof window !== 'undefined' && !window.location.origin.includes('localhost')) {
-    serverAvailable = false;
-    return false;
-  }
+  if (serverAvailable !== null) return serverAvailable;
   try {
     const res = await fetch(`${SERVER_URL}/api/health`, { signal: AbortSignal.timeout(800) });
     serverAvailable = res.ok;
@@ -80,7 +74,7 @@ export function resetServerCheck() {
 
 /**
  * Authenticate with the master password.
- * Works seamlessly whether the Express server is running or offline.
+ * Works seamlessly whether the Express server is running, Vite dev persistence, or offline.
  */
 export async function apiLogin(password: string): Promise<{ success: boolean; mode?: 'server' | 'standalone'; error?: string }> {
   const isUp = await checkServer();
@@ -100,10 +94,13 @@ export async function apiLogin(password: string): Promise<{ success: boolean; mo
         return { success: true, mode: 'server' };
       }
 
-      return { 
-        success: false, 
-        error: data.error || `Authentication failed (${res.status})` 
-      };
+      if (res.status !== 404) {
+        return { 
+          success: false, 
+          error: data.error || `Authentication failed (${res.status})` 
+        };
+      }
+      // If 404, fall through to standalone verification
     } catch {
       // Network glitch, proceed to standalone fallback
     }
@@ -250,7 +247,7 @@ export async function apiSet(key: string, value: any): Promise<void> {
     const token = getAuthToken();
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token && token !== 'standalone_local_session') {
+      if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
 

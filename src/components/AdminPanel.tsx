@@ -40,6 +40,7 @@ import {
   defaultAboutAncient, 
   defaultSkills 
 } from '../data';
+import { compressImage } from '../utils/imageCompressor';
 import { 
   Save, 
   Plus, 
@@ -164,6 +165,7 @@ export default function AdminPanel() {
   // Editing Achievement Modal State
   const [editingAchievementId, setEditingAchievementId] = useState<string | null>(null);
   const [achievementForm, setAchievementForm] = useState<Partial<AchievementItem>>({});
+  const [isCompressingImage, setIsCompressingImage] = useState(false);
 
   // Candidate Milestones detected from GitHub
   const [candidateMilestones, setCandidateMilestones] = useState<any[]>([]);
@@ -2708,25 +2710,35 @@ export default function AdminPanel() {
                       <input
                         type="file"
                         accept="image/*"
+                        disabled={isCompressingImage}
                         className="hidden"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
-                          if (file.size > 5 * 1024 * 1024) {
-                            alert('Image must be under 5MB.');
-                            return;
+                          try {
+                            setIsCompressingImage(true);
+                            // Auto-downscales and compresses to lightweight high-quality JPEG (<150KB)
+                            const compressed = await compressImage(file, 1200, 1200, 0.8);
+                            setAchievementForm(prev => ({ ...prev, imageUrl: compressed }));
+                          } catch (err: any) {
+                            alert(err?.message || 'Failed to process image');
+                          } finally {
+                            setIsCompressingImage(false);
                           }
-                          const reader = new FileReader();
-                          reader.onload = (ev) => {
-                            setAchievementForm({ ...achievementForm, imageUrl: ev.target?.result as string });
-                          };
-                          reader.readAsDataURL(file);
                         }}
                       />
                       <div className="p-2 rounded-full bg-cyan-950/60 border border-cyan-500/30 group-hover:border-cyan-400 transition-colors">
-                        <Upload size={16} className="text-cyan-400" />
+                        {isCompressingImage ? (
+                          <RefreshCw size={16} className="text-cyan-400 animate-spin" />
+                        ) : (
+                          <Upload size={16} className="text-cyan-400" />
+                        )}
                       </div>
-                      <span className="text-[11px] font-mono text-cyan-300/70 group-hover:text-cyan-300 text-center">Upload Photo<br/><span className="text-white/30">PNG, JPG, GIF · Max 5MB</span></span>
+                      <span className="text-[11px] font-mono text-cyan-300/70 group-hover:text-cyan-300 text-center">
+                        {isCompressingImage ? 'Optimizing Image...' : 'Upload Photo'}
+                        <br/>
+                        <span className="text-white/30">Auto-compressed for instant loading</span>
+                      </span>
                     </label>
 
                     {/* Or paste URL */}

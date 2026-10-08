@@ -327,8 +327,11 @@ export function saveAchievements(items: AchievementItem[]): void {
       imageUrl: a.imageUrl
     }));
     localStorage.setItem(STORAGE_KEYS.LEGACY_ACHIEVEMENTS, JSON.stringify(legacyCompatible));
-  } catch (err) {
+  } catch (err: any) {
     console.error('Failed to save achievements to localStorage:', err);
+    if (err?.name === 'QuotaExceededError' || err?.message?.toLowerCase().includes('quota')) {
+      alert('Browser storage quota exceeded. The image file may be too large. Please use a compressed photo.');
+    }
   }
   // Also persist to server (fire-and-forget)
   apiSet('achievements', items).catch(err =>
@@ -371,6 +374,7 @@ export function resolvePublicProjects(
       ? repo.topics.slice(0, 3).map(t => t.toUpperCase()).join(' • ') 
       : (repo?.language || 'Python • PyTorch'));
     const isPoC = ov.isPoC ?? c.isPoC ?? (repo ? (repo.name.toLowerCase().includes('poc') || repo.name.toLowerCase().includes('research')) : false);
+    const isFeatured = c.isFeatured ?? false;
     const def = defaultProjects.find(dp => dp.id === c.id);
     const githubUrl = ov.githubUrl?.trim() || repo?.html_url || def?.githubUrl || undefined;
     const liveDemoUrl = ov.liveDemoUrl?.trim() || repo?.homepage || def?.liveDemoUrl || undefined;
@@ -590,9 +594,38 @@ export async function initFromServer(): Promise<boolean> {
       localStorage.setItem(STORAGE_KEYS.PROJECTS_CONFIG, JSON.stringify(data.projectsConfig));
     }
     if (Array.isArray(data.achievements) && data.achievements.length > 0) {
-      // Also update legacy key
-      localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, JSON.stringify(data.achievements));
-      const legacyCompatible = data.achievements.map((a: AchievementItem) => ({
+      let localItems: AchievementItem[] = [];
+      try {
+        const rawLocal = localStorage.getItem(STORAGE_KEYS.ACHIEVEMENTS);
+        if (rawLocal) localItems = JSON.parse(rawLocal);
+      } catch {}
+
+      const itemMap = new Map<string, AchievementItem>();
+      // First populate from server
+      for (const item of data.achievements) {
+        if (item && item.id) itemMap.set(item.id, item);
+      }
+      // Preserve local achievements that aren't on server yet or modified locally
+      if (Array.isArray(localItems)) {
+        for (const item of localItems) {
+          if (item && item.id) {
+            if (!itemMap.has(item.id)) {
+              itemMap.set(item.id, item);
+            } else {
+              const serverItem = itemMap.get(item.id)!;
+              const localTime = new Date(item.updatedAt || item.createdAt || 0).getTime();
+              const serverTime = new Date(serverItem.updatedAt || serverItem.createdAt || 0).getTime();
+              if (localTime > serverTime) {
+                itemMap.set(item.id, item);
+              }
+            }
+          }
+        }
+      }
+
+      const mergedAchievements = Array.from(itemMap.values()).sort((a, b) => a.order - b.order);
+      localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, JSON.stringify(mergedAchievements));
+      const legacyCompatible = mergedAchievements.map((a: AchievementItem) => ({
         id: a.id, category: a.category, title: a.title,
         issuerOrVenue: a.issuerOrVenue, date: a.date, summary: a.summary, badgeText: a.badgeText,
         imageUrl: a.imageUrl
