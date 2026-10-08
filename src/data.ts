@@ -14,10 +14,81 @@ export interface ProjectData {
   outcome: string;
   tech: string;
   isPoC?: boolean;
+  repoName?: string;
+  githubUrl?: string;
+  liveDemoUrl?: string;
 }
 
-// Default projects start empty; populated cleanly only from user-selected repositories
-export const defaultProjects: ProjectData[] = [];
+// Default verified projects seeded from configuration (ensures fresh visitors see projects even offline or on static hosting)
+export const defaultProjects: ProjectData[] = [
+  {
+    id: 'gh-Flowgen',
+    title: 'Flowgen',
+    problem: 'AI-powered content workflow management platform for creators.',
+    approach: 'Engineered modular architecture in JavaScript.',
+    outcome: 'Maintained on GitHub with 0 stars.',
+    tech: 'JavaScript',
+    isPoC: false,
+    repoName: 'Flowgen',
+    liveDemoUrl: 'https://flowgen-olive.vercel.app/',
+    githubUrl: 'https://github.com/guruchiwate06/Flowgen'
+  },
+  {
+    id: 'gh-PATH_RL',
+    title: 'PATH RL',
+    problem: 'Reinforcement learning path planning and navigation algorithms.',
+    approach: 'Engineered modular architecture in Python.',
+    outcome: 'Maintained on GitHub with 0 stars.',
+    tech: 'Python',
+    isPoC: false,
+    repoName: 'PATH_RL',
+    githubUrl: 'https://github.com/guruchiwate06/PATH_RL'
+  },
+  {
+    id: 'gh-LUNAR',
+    title: 'LUNAR',
+    problem: 'Autonomous lunar landing guidance and control simulation.',
+    approach: 'Engineered modular architecture in Python.',
+    outcome: 'Maintained on GitHub with 0 stars.',
+    tech: 'Python',
+    isPoC: false,
+    repoName: 'LUNAR',
+    githubUrl: 'https://github.com/guruchiwate06/LUNAR'
+  },
+  {
+    id: 'gh-CircletoSearch',
+    title: 'Circleto Search',
+    problem: 'Visual gesture-based search system and interactive bounding detector.',
+    approach: 'Engineered modular architecture in JavaScript.',
+    outcome: 'Maintained on GitHub with 0 stars.',
+    tech: 'JavaScript',
+    isPoC: false,
+    repoName: 'CircletoSearch',
+    githubUrl: 'https://github.com/guruchiwate06/CircletoSearch'
+  },
+  {
+    id: 'gh-plane-plant-UMLintegration',
+    title: 'Plane Plant UML Integration',
+    problem: 'Automated architectural UML diagram generation and code analysis pipeline.',
+    approach: 'Engineered modular architecture in Python.',
+    outcome: 'Maintained on GitHub with 0 stars.',
+    tech: 'Python',
+    isPoC: false,
+    repoName: 'plane-plant-UMLintegration',
+    githubUrl: 'https://github.com/guruchiwate06/plane-plant-UMLintegration'
+  },
+  {
+    id: 'gh-Portfolio',
+    title: 'Portfolio',
+    problem: 'A personal portfolio website showcasing my projects, achievements, technical skills, and journey as an AI & ML student and developer.',
+    approach: 'Engineered modular architecture in TypeScript.',
+    outcome: 'Maintained on GitHub with 0 stars.',
+    tech: 'TypeScript • React • Vite',
+    isPoC: false,
+    repoName: 'Portfolio',
+    githubUrl: 'https://github.com/guruchiwate06/Portfolio'
+  }
+];
 
 export interface AchievementData {
   id: string;

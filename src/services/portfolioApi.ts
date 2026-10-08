@@ -6,8 +6,10 @@
  * 2. Standalone Mode: Smooth fallback to client-side localStorage persistence when server is offline or statically hosted.
  */
 
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+
 // Dynamically determine backend URL (can be customized via VITE_BACKEND_URL)
-const SERVER_URL = (
+export const SERVER_URL = (
   import.meta.env.VITE_BACKEND_URL || 
   (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3999' 
@@ -295,4 +297,408 @@ export async function apiGetAll(): Promise<Record<string, any>> {
 
 export function isServerMode(): boolean {
   return serverAvailable === true;
+}
+
+// ─── WebAuthn / Biometric Passkeys (Windows Hello / Touch ID) ───────────────
+
+export function isWebAuthnSupported(): boolean {
+  return typeof window !== 'undefined' && 
+         window.isSecureContext !== false && 
+         typeof window.PublicKeyCredential !== 'undefined';
+}
+
+export interface WebAuthnStatus {
+  hasPasskeys: boolean;
+  enforced: boolean;
+  credentials: Array<{
+    id: string;
+    name: string;
+    createdAt: string;
+    deviceType: string;
+  }>;
+}
+
+export async function apiGetWebAuthnStatus(): Promise<WebAuthnStatus> {
+  if (await checkServer()) {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/auth/webauthn/status`, {
+        signal: AbortSignal.timeout(2000),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {}
+  }
+  
+  // Standalone offline fallback
+  try {
+    const raw = localStorage.getItem('portfolio_webauthn_credentials');
+    const creds = raw ? JSON.parse(raw) : [];
+    const enforced = localStorage.getItem('portfolio_webauthn_enforced') === 'true' && creds.length > 0;
+    return {
+      hasPasskeys: creds.length > 0,
+      enforced,
+      credentials: creds.map((c: any) => ({
+        id: c.id,
+        name: c.name || 'Personal Passkey',
+        createdAt: c.createdAt || new Date().toISOString(),
+        deviceType: 'platform'
+      }))
+    };
+  } catch {
+    return { hasPasskeys: false, enforced: false, credentials: [] };
+  }
+}
+
+export async function apiRegisterPasskey(deviceName: string = 'Windows Hello / Biometric Key'): Promise<{ success: boolean; error?: string }> {
+  if (!isWebAuthnSupported()) {
+    return { success: false, error: 'WebAuthn / Passkeys are not supported in this browser environment or over insecure HTTP.' };
+  }
+
+  const isUp = await checkServer();
+  if (isUp) {
+    const token = getAuthToken();
+    try {
+      const optRes = await fetch(`${SERVER_URL}/api/auth/webauthn/register-options`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+      });
+      const options = await optRes.json();
+      if (!optRes.ok) throw new Error(options.error || 'Failed to fetch registration options');
+
+      const registrationResponse = await startRegistration({ optionsJSON: options });
+
+      const verifyRes = await fetch(`${SERVER_URL}/api/auth/webauthn/register-verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ response: registrationResponse, deviceName })
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) throw new Error(verifyData.error || 'Passkey verification failed');
+
+      return { success: true };
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError') {
+        return { success: false, error: 'Passkey registration cancelled or timed out.' };
+      }
+      return { success: false, error: err.message || 'Passkey registration failed.' };
+    }
+  }
+
+  // Standalone offline fallback
+  try {
+    const challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    const userId = new Uint8Array(16);
+    crypto.getRandomValues(userId);
+
+    const credential = (await navigator.credentials.create({
+      publicKey: {
+        challenge,
+        rp: { name: 'Rajguru Chiwate Portfolio', id: window.location.hostname },
+        user: { id: userId, name: 'rajguru', displayName: 'Rajguru Chiwate' },
+        pubKeyCredParams: [
+          { alg: -7, type: 'public-key' },
+          { alg: -257, type: 'public-key' }
+        ],
+        authenticatorSelection: {
+          residentKey: 'preferred',
+          userVerification: 'preferred'
+        },
+        timeout: 60000,
+        attestation: 'none'
+      }
+    })) as PublicKeyCredential;
+
+    if (credential) {
+      const existingRaw = localStorage.getItem('portfolio_webauthn_credentials');
+      const creds = existingRaw ? JSON.parse(existingRaw) : [];
+      creds.push({
+        id: credential.id,
+        name: deviceName,
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem('portfolio_webauthn_credentials', JSON.stringify(creds));
+      return { success: true };
+    }
+    return { success: false, error: 'No credential created.' };
+  } catch (err: any) {
+    if (err.name === 'NotAllowedError') {
+      return { success: false, error: 'Biometric prompt cancelled.' };
+    }
+    return { success: false, error: err.message || 'Offline registration failed.' };
+  }
+}
+
+export async function apiLoginWithPasskey(): Promise<{ success: boolean; error?: string }> {
+  if (!isWebAuthnSupported()) {
+    return { success: false, error: 'Biometric passkeys are not supported in this browser or over insecure HTTP.' };
+  }
+
+  const isUp = await checkServer();
+  if (isUp) {
+    try {
+      const optRes = await fetch(`${SERVER_URL}/api/auth/webauthn/login-options`, {
+        method: 'POST',
+      });
+      const options = await optRes.json();
+      if (!optRes.ok) throw new Error(options.error || 'Failed to fetch passkey login options');
+
+      const authResponse = await startAuthentication({ optionsJSON: options });
+
+      const verifyRes = await fetch(`${SERVER_URL}/api/auth/webauthn/login-verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ response: authResponse })
+      });
+      const data = await verifyRes.json();
+      if (!verifyRes.ok || !data.token) {
+        throw new Error(data.error || 'Passkey verification failed');
+      }
+
+      setAuthToken(data.token);
+      return { success: true };
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError') {
+        return { success: false, error: 'Biometric prompt cancelled or timed out.' };
+      }
+      return { success: false, error: err.message || 'Passkey login failed.' };
+    }
+  }
+
+  // Standalone offline fallback
+  try {
+    const raw = localStorage.getItem('portfolio_webauthn_credentials');
+    const creds = raw ? JSON.parse(raw) : [];
+    if (creds.length === 0) {
+      return { success: false, error: 'No biometric device has been registered yet on this browser.' };
+    }
+
+    const challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+
+    const assertion = await navigator.credentials.get({
+      publicKey: {
+        challenge,
+        rpId: window.location.hostname,
+        allowCredentials: creds.map((c: any) => ({
+          id: Uint8Array.from(atob(c.id.replace(/-/g, '+').replace(/_/g, '/')), ch => ch.charCodeAt(0)),
+          type: 'public-key'
+        })),
+        userVerification: 'preferred',
+        timeout: 60000
+      }
+    });
+
+    if (assertion) {
+      setAuthToken('standalone_local_session');
+      return { success: true };
+    }
+    return { success: false, error: 'Biometric assertion failed.' };
+  } catch (err: any) {
+    if (err.name === 'NotAllowedError') {
+      return { success: false, error: 'Biometric authentication cancelled.' };
+    }
+    return { success: false, error: err.message || 'Biometric authentication failed.' };
+  }
+}
+
+export async function apiTogglePasskeyEnforce(enforce: boolean): Promise<{ success: boolean; enforced?: boolean; error?: string }> {
+  const isUp = await checkServer();
+  if (isUp) {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${SERVER_URL}/api/auth/webauthn/toggle-enforce`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ enforce })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to toggle enforcement');
+      return { success: true, enforced: data.enforced };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Standalone mode
+  localStorage.setItem('portfolio_webauthn_enforced', enforce ? 'true' : 'false');
+  return { success: true, enforced: enforce };
+}
+
+export async function apiDeletePasskey(id: string): Promise<{ success: boolean; error?: string }> {
+  const isUp = await checkServer();
+  if (isUp) {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${SERVER_URL}/api/auth/webauthn/credential/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to remove credential');
+      }
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Standalone mode
+  try {
+    const raw = localStorage.getItem('portfolio_webauthn_credentials');
+    let creds = raw ? JSON.parse(raw) : [];
+    creds = creds.filter((c: any) => c.id !== id);
+    localStorage.setItem('portfolio_webauthn_credentials', JSON.stringify(creds));
+    if (creds.length === 0) {
+      localStorage.setItem('portfolio_webauthn_enforced', 'false');
+    }
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Failed to delete passkey from localStorage.' };
+  }
+}
+
+// ─── GitHub Identity Whitelist Authentication ──────────────────────────────
+
+export interface GitHubAuthConfig {
+  hasOAuthConfig: boolean;
+  clientId: string;
+  allowedAdmin: string;
+  enforced: boolean;
+}
+
+export async function apiGetGitHubAuthConfig(): Promise<GitHubAuthConfig> {
+  const isUp = await checkServer();
+  if (isUp) {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/auth/github/config`, { signal: AbortSignal.timeout(2000) });
+      if (res.ok) return await res.json();
+    } catch {}
+  }
+  
+  // Standalone offline fallback
+  const enforced = localStorage.getItem('portfolio_github_enforced') === 'true';
+  return {
+    hasOAuthConfig: false,
+    clientId: '',
+    allowedAdmin: 'guruchiwate06',
+    enforced,
+  };
+}
+
+export async function apiLoginWithGitHubOAuth(code: string, redirectUri: string): Promise<{ success: boolean; user?: string; error?: string }> {
+  const isUp = await checkServer();
+  if (!isUp) {
+    return { success: false, error: 'Backend server is required to exchange GitHub OAuth code.' };
+  }
+
+  try {
+    const res = await fetch(`${SERVER_URL}/api/auth/github/callback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, redirectUri }),
+    });
+
+    const data = await res.json();
+    if (res.ok && data.token) {
+      setAuthToken(data.token);
+      return { success: true, user: data.user };
+    }
+    return { success: false, error: data.error || 'GitHub OAuth login failed.' };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Network error verifying GitHub OAuth.' };
+  }
+}
+
+export async function apiLoginWithGitHubPAT(pat: string): Promise<{ success: boolean; user?: string; error?: string }> {
+  if (!pat.trim()) {
+    return { success: false, error: 'GitHub token cannot be blank.' };
+  }
+
+  const isUp = await checkServer();
+  if (isUp) {
+    try {
+      const res = await fetch(`${SERVER_URL}/api/auth/github/pat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pat: pat.trim() }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.token) {
+        setAuthToken(data.token);
+        return { success: true, user: data.user };
+      }
+      return { success: false, error: data.error || 'GitHub token authentication failed.' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error verifying GitHub token.' };
+    }
+  }
+
+  // Standalone client verification fallback
+  try {
+    const userRes = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: `token ${pat.trim()}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
+
+    if (!userRes.ok) {
+      return { success: false, error: 'Invalid or expired GitHub Personal Access Token.' };
+    }
+
+    const userData = await userRes.json();
+    const login = (userData.login || '').toLowerCase();
+    const allowedAdmin = 'guruchiwate06';
+
+    if (login !== allowedAdmin.toLowerCase()) {
+      return {
+        success: false,
+        error: `Access Denied: Token belongs to GitHub user @${userData.login}. Only administrator @${allowedAdmin} is authorized.`
+      };
+    }
+
+    setAuthToken('standalone_local_session');
+    return { success: true, user: userData.login };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error verifying GitHub token with GitHub API.' };
+  }
+}
+
+export async function apiToggleGitHubAuthEnforce(enforce: boolean): Promise<{ success: boolean; enforced?: boolean; error?: string }> {
+  const isUp = await checkServer();
+  if (isUp) {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${SERVER_URL}/api/auth/github/toggle-enforce`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ enforce })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to toggle GitHub enforcement');
+      return { success: true, enforced: data.enforced };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Standalone mode
+  localStorage.setItem('portfolio_github_enforced', enforce ? 'true' : 'false');
+  return { success: true, enforced: enforce };
 }

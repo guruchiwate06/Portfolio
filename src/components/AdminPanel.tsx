@@ -76,7 +76,9 @@ import {
   FileText,
   Lock,
   Key,
-  Shield
+  Shield,
+  ScanFace,
+  KeyRound
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -84,7 +86,19 @@ import {
   apiVerifyAuth, 
   apiLogout, 
   apiChangePassword, 
-  isServerMode 
+  isServerMode,
+  apiGetWebAuthnStatus,
+  apiRegisterPasskey,
+  apiLoginWithPasskey,
+  apiTogglePasskeyEnforce,
+  apiDeletePasskey,
+  isWebAuthnSupported,
+  WebAuthnStatus,
+  apiGetGitHubAuthConfig,
+  apiLoginWithGitHubOAuth,
+  apiLoginWithGitHubPAT,
+  apiToggleGitHubAuthEnforce,
+  GitHubAuthConfig
 } from '../services/portfolioApi';
 
 type AdminTab = 'projects' | 'github_repos' | 'achievements' | 'linkedin' | 'about_skills' | 'cv' | 'settings';
@@ -105,6 +119,25 @@ export default function AdminPanel() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordChangeStatus, setPasswordChangeStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+
+  // WebAuthn / Biometric Passkey State
+  const [webAuthnStatus, setWebAuthnStatus] = useState<WebAuthnStatus>({ hasPasskeys: false, enforced: false, credentials: [] });
+  const [isPasskeyLoggingIn, setIsPasskeyLoggingIn] = useState(false);
+  const [isRegisteringPasskey, setIsRegisteringPasskey] = useState(false);
+  const [passkeyDeviceName, setPasskeyDeviceName] = useState('');
+  const [passkeyStatusMsg, setPasskeyStatusMsg] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+
+  // GitHub Identity Whitelist Auth State
+  const [githubAuthConfig, setGithubAuthConfig] = useState<GitHubAuthConfig>({
+    hasOAuthConfig: false,
+    clientId: '',
+    allowedAdmin: 'guruchiwate06',
+    enforced: false,
+  });
+  const [isGitHubLoggingIn, setIsGitHubLoggingIn] = useState(false);
+  const [githubPatInput, setGithubPatInput] = useState('');
+  const [showPatInput, setShowPatInput] = useState(false);
+  const [githubStatusMsg, setGithubStatusMsg] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   
   // System State
   const [settings, setSettingsState] = useState<PortfolioSettings>(DEFAULT_SETTINGS);
@@ -145,6 +178,31 @@ export default function AdminPanel() {
       setIsAuthenticated(isValid);
       setAuthChecking(false);
     });
+
+    apiGetWebAuthnStatus().then(setWebAuthnStatus).catch(() => {});
+    apiGetGitHubAuthConfig().then(setGithubAuthConfig).catch(() => {});
+
+    // Check if returning from GitHub OAuth callback (?code=xyz)
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthCode = urlParams.get('code');
+    if (oauthCode) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setIsGitHubLoggingIn(true);
+      setLoginError(null);
+      const redirectUri = window.location.origin + '/admin';
+      apiLoginWithGitHubOAuth(oauthCode, redirectUri).then(res => {
+        if (res.success) {
+          setIsAuthenticated(true);
+          handleSyncGitHub(false);
+        } else {
+          setLoginError(res.error || 'GitHub OAuth verification failed.');
+        }
+      }).catch(err => {
+        setLoginError(err.message || 'GitHub OAuth error.');
+      }).finally(() => {
+        setIsGitHubLoggingIn(false);
+      });
+    }
 
     initFromServer().then(() => {
       const loadedSettings = getSettings();
@@ -265,6 +323,143 @@ export default function AdminPanel() {
       setPasswordChangeStatus({ type: 'error', msg: err.message || 'Error communicating with server.' });
     } finally {
       setIsChangingPassword(false);
+    }
+  };
+
+  // -------------------------------------------------------------
+  // WebAuthn Passkey Handlers
+  // -------------------------------------------------------------
+  const handlePasskeyLogin = async () => {
+    setIsPasskeyLoggingIn(true);
+    setLoginError(null);
+    try {
+      const res = await apiLoginWithPasskey();
+      if (res.success) {
+        setIsAuthenticated(true);
+        handleSyncGitHub(false);
+      } else {
+        setLoginError(res.error || 'Biometric authentication failed.');
+      }
+    } catch (err: any) {
+      setLoginError(err.message || 'Passkey verification failed.');
+    } finally {
+      setIsPasskeyLoggingIn(false);
+    }
+  };
+
+  const handleRegisterPasskey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsRegisteringPasskey(true);
+    setPasskeyStatusMsg(null);
+    try {
+      const name = passkeyDeviceName.trim() || "Rajguru's Hardware Key (Windows Hello)";
+      const res = await apiRegisterPasskey(name);
+      if (res.success) {
+        setPasskeyStatusMsg({ type: 'success', msg: 'Biometric passkey successfully registered and linked to this device!' });
+        setPasskeyDeviceName('');
+        const status = await apiGetWebAuthnStatus();
+        setWebAuthnStatus(status);
+      } else {
+        setPasskeyStatusMsg({ type: 'error', msg: res.error || 'Registration failed.' });
+      }
+    } catch (err: any) {
+      setPasskeyStatusMsg({ type: 'error', msg: err.message || 'Passkey error.' });
+    } finally {
+      setIsRegisteringPasskey(false);
+    }
+  };
+
+  const handleTogglePasskeyEnforce = async (enforce: boolean) => {
+    setPasskeyStatusMsg(null);
+    try {
+      const res = await apiTogglePasskeyEnforce(enforce);
+      if (res.success) {
+        setWebAuthnStatus(prev => ({ ...prev, enforced: !!res.enforced }));
+        setPasskeyStatusMsg({
+          type: 'success',
+          msg: res.enforced 
+            ? 'Strict Biometric Lock Enabled: Master password alone can no longer log in. Only your physical device can unlock the backend.' 
+            : 'Enforcement disabled: Password fallback is now permitted.'
+        });
+      } else {
+        setPasskeyStatusMsg({ type: 'error', msg: res.error || 'Failed to toggle enforcement.' });
+      }
+    } catch (err: any) {
+      setPasskeyStatusMsg({ type: 'error', msg: err.message });
+    }
+  };
+
+  const handleDeletePasskey = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this registered biometric passkey?')) return;
+    setPasskeyStatusMsg(null);
+    try {
+      const res = await apiDeletePasskey(id);
+      if (res.success) {
+        const status = await apiGetWebAuthnStatus();
+        setWebAuthnStatus(status);
+        setPasskeyStatusMsg({ type: 'success', msg: 'Biometric passkey removed.' });
+      } else {
+        setPasskeyStatusMsg({ type: 'error', msg: res.error || 'Failed to remove passkey.' });
+      }
+    } catch (err: any) {
+      setPasskeyStatusMsg({ type: 'error', msg: err.message });
+    }
+  };
+
+  // -------------------------------------------------------------
+  // GitHub Identity Whitelist Handlers
+  // -------------------------------------------------------------
+  const handleStartGitHubOAuth = () => {
+    setIsGitHubLoggingIn(true);
+    setLoginError(null);
+    if (githubAuthConfig.hasOAuthConfig && githubAuthConfig.clientId) {
+      const redirectUri = encodeURIComponent(window.location.origin + '/admin');
+      window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubAuthConfig.clientId}&scope=read:user&redirect_uri=${redirectUri}`;
+    } else {
+      // If OAuth app client ID is not configured on server, expand PAT quick-login
+      setShowPatInput(true);
+      setIsGitHubLoggingIn(false);
+    }
+  };
+
+  const handleGitHubPatLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!githubPatInput.trim()) return;
+    setIsGitHubLoggingIn(true);
+    setLoginError(null);
+    try {
+      const res = await apiLoginWithGitHubPAT(githubPatInput);
+      if (res.success) {
+        setIsAuthenticated(true);
+        setGithubPatInput('');
+        handleSyncGitHub(false);
+      } else {
+        setLoginError(res.error || 'GitHub token authentication failed.');
+      }
+    } catch (err: any) {
+      setLoginError(err.message || 'GitHub login error.');
+    } finally {
+      setIsGitHubLoggingIn(false);
+    }
+  };
+
+  const handleToggleGitHubEnforce = async (enforce: boolean) => {
+    setGithubStatusMsg(null);
+    try {
+      const res = await apiToggleGitHubAuthEnforce(enforce);
+      if (res.success) {
+        setGithubAuthConfig(prev => ({ ...prev, enforced: !!res.enforced }));
+        setGithubStatusMsg({
+          type: 'success',
+          msg: res.enforced 
+            ? `GitHub Identity Lock Active: Direct password login is now disabled. Only verified GitHub account @${githubAuthConfig.allowedAdmin} can access the terminal.` 
+            : 'Enforcement disabled: Password fallback is now permitted.'
+        });
+      } else {
+        setGithubStatusMsg({ type: 'error', msg: res.error || 'Failed to toggle enforcement.' });
+      }
+    } catch (err: any) {
+      setGithubStatusMsg({ type: 'error', msg: err.message });
     }
   };
 
@@ -634,7 +829,7 @@ export default function AdminPanel() {
         {/* Ambient glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
         
-        <form onSubmit={handleLogin} className="p-8 border border-cyan-500/30 bg-black/70 backdrop-blur-xl rounded-2xl flex flex-col gap-5 max-w-sm w-full shadow-[0_0_35px_rgba(0,242,255,0.15)] relative z-10">
+        <div className="p-8 border border-cyan-500/30 bg-black/70 backdrop-blur-xl rounded-2xl flex flex-col gap-5 max-w-sm w-full shadow-[0_0_35px_rgba(0,242,255,0.15)] relative z-10">
           <div className="flex items-center gap-3 border-b border-cyan-500/20 pb-4">
             <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-400">
               <Lock size={24} />
@@ -651,43 +846,149 @@ export default function AdminPanel() {
               <span>{loginError}</span>
             </div>
           )}
-          
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs uppercase tracking-wider text-cyan-300/70">Master Password</label>
-            <input 
-              type="password" 
-              placeholder="Enter Access Key" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoggingIn}
-              className="bg-black/60 border border-cyan-500/30 p-3 rounded-lg text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-mono text-sm"
-              autoFocus
-            />
+
+          {/* GitHub Identity Whitelist Sign-In (Primary Recommended) */}
+          <div className="flex flex-col gap-2.5">
+            {githubAuthConfig.enforced && (
+              <div className="p-2.5 rounded-lg bg-purple-950/40 border border-purple-500/30 text-purple-200 text-[11px] flex items-center gap-2">
+                <ShieldCheck size={14} className="text-purple-400 shrink-0" />
+                <span>GitHub Lock Active: Only verified @{githubAuthConfig.allowedAdmin} can sign in.</span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleStartGitHubOAuth}
+              disabled={isGitHubLoggingIn || isLoggingIn}
+              className="w-full py-3 px-4 rounded-lg bg-[#24292e] hover:bg-[#2f363d] border border-cyan-500/40 text-white font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_0_20px_rgba(0,242,255,0.2)] hover:shadow-[0_0_25px_rgba(0,242,255,0.4)] transition-all disabled:opacity-50"
+            >
+              {isGitHubLoggingIn ? (
+                <>
+                  <RefreshCw size={15} className="animate-spin text-cyan-400" />
+                  <span>Verifying GitHub Identity...</span>
+                </>
+              ) : (
+                <>
+                  <Github size={16} className="text-white" />
+                  <span>Sign In with GitHub (@{githubAuthConfig.allowedAdmin})</span>
+                </>
+              )}
+            </button>
+
+            {/* Quick PAT Token Drawer */}
+            {showPatInput ? (
+              <form onSubmit={handleGitHubPatLogin} className="p-3 rounded-lg bg-black/60 border border-cyan-500/30 space-y-2">
+                <div className="text-[11px] text-cyan-300 font-mono flex items-center justify-between">
+                  <span>Enter GitHub Token (PAT):</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPatInput(false)}
+                    className="text-stone-400 hover:text-white text-[10px]"
+                  >
+                    Hide
+                  </button>
+                </div>
+                <input
+                  type="password"
+                  value={githubPatInput}
+                  onChange={(e) => setGithubPatInput(e.target.value)}
+                  placeholder="ghp_... or github_pat_..."
+                  className="w-full bg-black/80 border border-cyan-500/40 p-2 rounded text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  disabled={isGitHubLoggingIn}
+                  className="w-full py-1.5 rounded bg-cyan-600 hover:bg-cyan-500 text-black font-bold font-mono text-xs uppercase cursor-pointer"
+                >
+                  Verify Token & Enter
+                </button>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowPatInput(true)}
+                className="text-[11px] text-cyan-400/60 hover:text-cyan-300 transition-colors text-center font-mono py-0.5"
+              >
+                Or use GitHub Personal Access Token (PAT) →
+              </button>
+            )}
           </div>
 
-          <button 
-            type="submit" 
-            disabled={isLoggingIn}
-            className="bg-cyan-600 hover:bg-cyan-500 disabled:bg-cyan-950/60 text-black font-bold p-3 rounded-lg transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(0,242,255,0.3)] hover:shadow-[0_0_25px_rgba(0,242,255,0.6)]"
-          >
-            {isLoggingIn ? (
-              <>
-                <RefreshCw size={14} className="animate-spin" />
-                <span>Authenticating...</span>
-              </>
-            ) : (
-              'Authenticate & Enter'
-            )}
-          </button>
+          {/* Biometric Passkey Alternative */}
+          {isWebAuthnSupported() && !githubAuthConfig.enforced && (
+            <div className="flex flex-col gap-2 pt-1">
+              <button
+                type="button"
+                onClick={handlePasskeyLogin}
+                disabled={isPasskeyLoggingIn || isLoggingIn || isGitHubLoggingIn}
+                className="w-full py-2.5 px-4 rounded-lg bg-black/60 hover:bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50"
+              >
+                {isPasskeyLoggingIn ? (
+                  <>
+                    <RefreshCw size={14} className="animate-spin" />
+                    <span>Verifying Biometrics...</span>
+                  </>
+                ) : (
+                  <>
+                    <ScanFace size={15} />
+                    <span>Windows Hello / Passkey</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Password Fallback Form */}
+          {!githubAuthConfig.enforced && !webAuthnStatus.enforced ? (
+            <form onSubmit={handleLogin} className="flex flex-col gap-4">
+              <div className="flex items-center gap-2 my-1">
+                <div className="h-px bg-cyan-500/20 flex-1" />
+                <span className="text-[10px] text-cyan-400/50 uppercase tracking-widest">Or Master Password</span>
+                <div className="h-px bg-cyan-500/20 flex-1" />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs uppercase tracking-wider text-cyan-300/70">Master Password</label>
+                <input 
+                  type="password" 
+                  placeholder="Enter Access Key" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoggingIn || isPasskeyLoggingIn || isGitHubLoggingIn}
+                  className="bg-black/60 border border-cyan-500/30 p-3 rounded-lg text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-mono text-sm"
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={isLoggingIn || isPasskeyLoggingIn || isGitHubLoggingIn}
+                className="bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 font-bold p-3 rounded-lg transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isLoggingIn ? (
+                  <>
+                    <RefreshCw size={14} className="animate-spin" />
+                    <span>Authenticating...</span>
+                  </>
+                ) : (
+                  'Authenticate & Enter'
+                )}
+              </button>
+            </form>
+          ) : (
+            <p className="text-[11px] text-center text-cyan-400/40 pt-1">
+              Direct password login is disabled by security policy. Only verified GitHub ID @{githubAuthConfig.allowedAdmin} can access this console.
+            </p>
+          )}
 
           <button 
             type="button" 
             onClick={() => navigate('/')} 
-            className="text-xs text-center text-cyan-400/50 hover:text-cyan-300 transition-colors pt-2"
+            className="text-xs text-center text-cyan-400/50 hover:text-cyan-300 transition-colors pt-1"
           >
             ← Return to Public Portfolio
           </button>
-        </form>
+        </div>
       </div>
     );
   }
@@ -1887,6 +2188,184 @@ export default function AdminPanel() {
                   {isChangingPassword ? 'Updating Password...' : 'Save New Password'}
                 </button>
               </form>
+
+              {/* GitHub Identity Whitelist Card */}
+              <div className="pt-6 border-t border-cyan-500/20 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Github size={18} className="text-white" />
+                    <h3 className="text-sm font-mono text-cyan-300 uppercase tracking-wider">
+                      GitHub Identity Whitelist (@{githubAuthConfig.allowedAdmin})
+                    </h3>
+                  </div>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                    githubAuthConfig.enforced 
+                      ? 'border-purple-500/50 bg-purple-950/50 text-purple-300' 
+                      : 'border-cyan-500/50 bg-cyan-950/50 text-cyan-300'
+                  }`}>
+                    {githubAuthConfig.enforced ? '🔒 GitHub Enforcement Active' : 'Whitelist Active'}
+                  </span>
+                </div>
+
+                <p className="text-xs text-white/70 leading-relaxed">
+                  Restricts access strictly to your GitHub username (<strong>@{githubAuthConfig.allowedAdmin}</strong>). Even if an attacker learns your master password, they are blocked because only your authenticated GitHub identity is authorized.
+                </p>
+
+                {githubStatusMsg && (
+                  <div className={`p-3 rounded-lg text-xs font-mono flex items-center gap-2 ${
+                    githubStatusMsg.type === 'success'
+                      ? 'bg-green-950/40 border border-green-500/40 text-green-300'
+                      : 'bg-red-950/40 border border-red-500/40 text-red-300'
+                  }`}>
+                    {githubStatusMsg.type === 'success' ? <Check size={14} /> : <AlertTriangle size={14} />}
+                    {githubStatusMsg.msg}
+                  </div>
+                )}
+
+                <div className="p-3.5 rounded-lg bg-gradient-to-r from-purple-950/40 to-cyan-950/40 border border-purple-500/30 flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-xs font-bold font-mono text-purple-300 flex items-center gap-1.5">
+                      <ShieldCheck size={14} />
+                      Enforce GitHub Authentication Only
+                    </div>
+                    <div className="text-[11px] text-white/60">
+                      Disables direct master password login completely. Only @{githubAuthConfig.allowedAdmin} can log in.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleGitHubEnforce(!githubAuthConfig.enforced)}
+                    className={`px-3 py-1.5 rounded font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                      githubAuthConfig.enforced
+                        ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+                        : 'bg-black/60 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/60'
+                    }`}
+                  >
+                    {githubAuthConfig.enforced ? 'Enabled' : 'Disabled'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Hardware Biometric Passkeys (Windows Hello / Touch ID) Section */}
+              <div className="pt-6 border-t border-cyan-500/20 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ScanFace size={18} className="text-cyan-400" />
+                    <h3 className="text-sm font-mono text-cyan-300 uppercase tracking-wider">
+                      Biometric Device Passkeys (Windows Hello / Touch ID)
+                    </h3>
+                  </div>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                    webAuthnStatus.enforced 
+                      ? 'border-purple-500/50 bg-purple-950/50 text-purple-300' 
+                      : (webAuthnStatus.credentials.length > 0 ? 'border-cyan-500/50 bg-cyan-950/50 text-cyan-300' : 'border-stone-500/40 text-stone-400')
+                  }`}>
+                    {webAuthnStatus.enforced ? '🔒 Hardware Lock Active' : `${webAuthnStatus.credentials.length} Device(s) Registered`}
+                  </span>
+                </div>
+
+                <p className="text-xs text-white/70 leading-relaxed">
+                  Cryptographically link your physical computer (fingerprint, facial recognition, or PIN) to the admin console. Once registered and enforced, <strong>even if someone discovers your password, they are strictly blocked</strong> because only your physical hardware device possesses the private key.
+                </p>
+
+                {passkeyStatusMsg && (
+                  <div className={`p-3 rounded-lg text-xs font-mono flex items-center gap-2 ${
+                    passkeyStatusMsg.type === 'success'
+                      ? 'bg-green-950/40 border border-green-500/40 text-green-300'
+                      : 'bg-red-950/40 border border-red-500/40 text-red-300'
+                  }`}>
+                    {passkeyStatusMsg.type === 'success' ? <Check size={14} /> : <AlertTriangle size={14} />}
+                    {passkeyStatusMsg.msg}
+                  </div>
+                )}
+
+                {/* List of Registered Devices */}
+                {webAuthnStatus.credentials.length > 0 && (
+                  <div className="space-y-2 pt-1">
+                    <label className="text-[11px] font-mono uppercase tracking-wider text-cyan-300/60 block">Registered Hardware Devices</label>
+                    <div className="space-y-2">
+                      {webAuthnStatus.credentials.map((cred) => (
+                        <div key={cred.id} className="p-3 rounded-lg bg-black/60 border border-cyan-500/30 flex items-center justify-between gap-3 text-xs font-mono">
+                          <div className="flex items-center gap-2.5">
+                            <KeyRound size={16} className="text-cyan-400" />
+                            <div>
+                              <div className="font-bold text-white">{cred.name}</div>
+                              <div className="text-[10px] text-white/50">Registered: {new Date(cred.createdAt).toLocaleDateString()}</div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePasskey(cred.id)}
+                            className="p-1.5 rounded hover:bg-red-950/60 text-red-400 hover:text-red-300 border border-transparent hover:border-red-500/30 transition-all cursor-pointer"
+                            title="Remove Passkey"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Enforcement Switch */}
+                    <div className="p-3.5 rounded-lg bg-gradient-to-r from-purple-950/40 to-cyan-950/40 border border-purple-500/30 flex items-center justify-between gap-4 mt-3">
+                      <div>
+                        <div className="text-xs font-bold font-mono text-purple-300 flex items-center gap-1.5">
+                          <ShieldCheck size={14} />
+                          Enforce Biometric Passkey Only
+                        </div>
+                        <div className="text-[11px] text-white/60">
+                          Disables direct password login. Only this physical biometric device can unlock the terminal.
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePasskeyEnforce(!webAuthnStatus.enforced)}
+                        className={`px-3 py-1.5 rounded font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                          webAuthnStatus.enforced
+                            ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+                            : 'bg-black/60 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/60'
+                        }`}
+                      >
+                        {webAuthnStatus.enforced ? 'Enabled' : 'Disabled'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Register New Passkey Form */}
+                <form onSubmit={handleRegisterPasskey} className="space-y-3 pt-2">
+                  <div className="flex flex-col sm:flex-row gap-2.5">
+                    <input
+                      type="text"
+                      value={passkeyDeviceName}
+                      onChange={(e) => setPasskeyDeviceName(e.target.value)}
+                      placeholder="Device name (e.g. My Laptop Windows Hello)"
+                      className="bg-black/60 border border-cyan-500/30 p-2.5 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-cyan-400 flex-1"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isRegisteringPasskey || !isWebAuthnSupported()}
+                      className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-black font-bold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(0,242,255,0.2)]"
+                    >
+                      {isRegisteringPasskey ? (
+                        <>
+                          <RefreshCw size={14} className="animate-spin" />
+                          <span>Waiting for Device...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ScanFace size={15} />
+                          <span>Register Device Passkey</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {!isWebAuthnSupported() && (
+                    <p className="text-[11px] text-amber-400/80 font-mono">
+                      Notice: WebAuthn requires a secure context (HTTPS or localhost).
+                    </p>
+                  )}
+                </form>
+              </div>
             </div>
 
             {/* Backup & Restore */}

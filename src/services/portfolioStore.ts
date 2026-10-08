@@ -18,7 +18,7 @@ import {
   ProjectData, 
   AchievementData 
 } from '../data';
-import { apiSet } from './portfolioApi';
+import { apiSet, SERVER_URL } from './portfolioApi';
 
 const STORAGE_KEYS = {
   PROJECTS_CONFIG: 'portfolio_projects_config_v2',
@@ -192,8 +192,8 @@ export function getProjectsConfig(): ProjectConfig[] {
     // Seed initial project configs only from non-dummy projects
     const initialConfigs: ProjectConfig[] = seedProjects.map((p, idx) => ({
       id: p.id || `manual-${idx + 1}`,
-      source: 'manual',
-      repoName: undefined,
+      source: p.repoName ? 'github' : 'manual',
+      repoName: p.repoName,
       isSelected: true,
       isVisible: true,
       order: idx,
@@ -205,6 +205,8 @@ export function getProjectsConfig(): ProjectConfig[] {
         approach: p.approach,
         outcome: p.outcome,
         tech: p.tech,
+        githubUrl: p.githubUrl,
+        liveDemoUrl: p.liveDemoUrl,
         isPoC: !!p.isPoC
       },
       createdAt: new Date().toISOString(),
@@ -559,9 +561,10 @@ export function importPortfolioBackup(jsonString: string): boolean {
  * Returns true if server data was loaded, false if using local/default data.
  */
 export async function initFromServer(): Promise<boolean> {
+  const targetUrl = SERVER_URL ? `${SERVER_URL}/api/portfolio` : '/api/portfolio';
   try {
-    const res = await fetch('http://localhost:3999/api/portfolio', {
-      signal: AbortSignal.timeout(1500)
+    const res = await fetch(targetUrl, {
+      signal: AbortSignal.timeout(2000)
     });
     if (!res.ok) return false;
 
