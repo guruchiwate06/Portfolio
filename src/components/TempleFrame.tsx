@@ -5,7 +5,7 @@
 
 import { motion } from 'motion/react';
 import { ReactNode, useRef, useState, useEffect, useMemo } from 'react';
-import { Cpu, Zap, Menu, X, Github, Linkedin } from 'lucide-react';
+import { Cpu, Zap, Menu, X, Github, Linkedin, Instagram } from 'lucide-react';
 
 const JOINING_HANDS_BG = new URL('../assets/ancient-joining-hands.webp', import.meta.url).href;
 
@@ -252,6 +252,16 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
                 }`}
               >
                 <Linkedin size={14} /> LinkedIn
+              </a>
+              <a 
+                href="https://www.instagram.com/guru_chiwate06/?hl=en" 
+                target="_blank" 
+                rel="noreferrer" 
+                className={`p-2 flex items-center gap-1.5 font-mono text-[11px] ${
+                  theme === 'ancient' ? 'text-stone-ink/70 hover:text-gold-accent' : 'text-cyan-400/70 hover:text-cyan-300'
+                }`}
+              >
+                <Instagram size={14} /> Instagram
               </a>
             </div>
           </motion.div>

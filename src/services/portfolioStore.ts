@@ -40,6 +40,7 @@ export const DEFAULT_SETTINGS: PortfolioSettings = {
   cacheTtlMinutes: 30,
   autoSyncOnLoad: true,
   linkedInProfileUrl: 'https://www.linkedin.com/in/rajguru-chiwate-9731772b1',
+  instagramProfileUrl: 'https://www.instagram.com/guru_chiwate06/?hl=en',
   lastSyncTimestamp: 0,
   cvUrl: '/Resume.pdf',
   cvFileName: 'Rajguru_Chiwate_Resume.pdf',

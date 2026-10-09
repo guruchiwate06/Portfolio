@@ -115,8 +115,10 @@ export interface PortfolioSettings {
   cacheTtlMinutes: number;
   autoSyncOnLoad: boolean;
   linkedInProfileUrl: string;
+  instagramProfileUrl?: string;
   lastSyncTimestamp: number;
   cvUrl?: string;
   cvFileName?: string;
   cvLastUpdated?: number;
 }
+

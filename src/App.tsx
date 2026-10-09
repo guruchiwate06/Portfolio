@@ -11,6 +11,7 @@ import {
   ArrowRight, 
   Github, 
   Linkedin,
+  Instagram,
   Trophy,
   BookOpen,
   Award,
@@ -288,6 +289,19 @@ export default function App() {
           }`}
         >
           <Linkedin size={24} />
+        </a>
+        <a 
+          href="https://www.instagram.com/guru_chiwate06/?hl=en" 
+          target="_blank" 
+          rel="noreferrer" 
+          aria-label="Instagram Profile"
+          className={`transition-all duration-500 hover:scale-110 ${
+            theme === 'ancient' 
+              ? 'text-ancient-dark/60 hover:text-gold-accent' 
+              : 'text-cyan-500/60 hover:text-cyan-400 hover:drop-shadow-[0_0_8px_rgba(0,242,255,0.8)]'
+          }`}
+        >
+          <Instagram size={24} />
         </a>
       </motion.div>
 
@@ -1068,6 +1082,17 @@ export default function App() {
             }`}
           >
             <Linkedin size={15} />
+          </a>
+          <a 
+            href="https://www.instagram.com/guru_chiwate06/?hl=en" 
+            target="_blank" 
+            rel="noreferrer" 
+            aria-label="Instagram Profile"
+            className={`p-1.5 rounded transition-all hover:scale-110 ${
+              theme === 'ancient' ? 'text-stone-ink/60 hover:text-gold-accent' : 'text-cyan-500/60 hover:text-cyan-300'
+            }`}
+          >
+            <Instagram size={15} />
           </a>
         </div>
       </footer>

@@ -10,7 +10,7 @@
 
 **A high-performance cinematic personal portfolio blending classical architecture with modern neural aesthetics.**
 
-[Explore Live Demo](https://guruchiwate06.github.io/Portfolio) • [Report Issue](https://github.com/guruchiwate06/Portfolio/issues) • [LinkedIn](https://www.linkedin.com/in/rajguru-chiwate-9731772b1)
+[Explore Live Demo](https://guruchiwate06.github.io/Portfolio) • [Report Issue](https://github.com/guruchiwate06/Portfolio/issues) • [LinkedIn](https://www.linkedin.com/in/rajguru-chiwate-9731772b1) • [Instagram](https://www.instagram.com/guru_chiwate06/?hl=en)
 
 </div>
 
@@ -120,6 +120,7 @@ This is the personal portfolio of **Rajguru Chiwate**, showcasing projects, rese
 **Rajguru Chiwate**
 - GitHub: [@guruchiwate06](https://github.com/guruchiwate06)
 - LinkedIn: [Rajguru Chiwate](https://www.linkedin.com/in/rajguru-chiwate-9731772b1)
+- Instagram: [@guru_chiwate06](https://www.instagram.com/guru_chiwate06/?hl=en)
 
 ---
 
