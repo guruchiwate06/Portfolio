@@ -5,7 +5,7 @@
 
 import { motion } from 'motion/react';
 import { ReactNode, useRef, useState, useEffect, useMemo } from 'react';
-import { Cpu, Zap, Menu, X, Github, Linkedin, Lock } from 'lucide-react';
+import { Cpu, Zap, Menu, X, Github, Linkedin } from 'lucide-react';
 
 const JOINING_HANDS_BG = new URL('../assets/ancient-joining-hands.webp', import.meta.url).href;
 
@@ -252,14 +252,6 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
                 }`}
               >
                 <Linkedin size={14} /> LinkedIn
-              </a>
-              <a 
-                href="/admin" 
-                className={`p-2 flex items-center gap-1.5 font-mono text-[11px] ${
-                  theme === 'ancient' ? 'text-stone-ink/70 hover:text-gold-accent' : 'text-cyan-400/70 hover:text-cyan-300'
-                }`}
-              >
-                <Lock size={12} /> Admin
               </a>
             </div>
           </motion.div>

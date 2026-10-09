@@ -21,7 +21,6 @@ import {
   ChevronDown,
   ExternalLink,
   Star,
-  Lock,
   Link as LinkIcon,
   X,
   Maximize2,
@@ -1069,15 +1068,6 @@ export default function App() {
             }`}
           >
             <Linkedin size={15} />
-          </a>
-          <a 
-            href="/admin" 
-            title="Admin Access" 
-            className={`transition-colors hover:scale-110 inline-flex items-center gap-1 normal-case tracking-normal text-[11px] font-mono ${
-              theme === 'ancient' ? 'text-stone-ink/50 hover:text-gold-accent' : 'text-cyan-500/50 hover:text-cyan-300'
-            }`}
-          >
-            <Lock size={12} /> Admin
           </a>
         </div>
       </footer>
