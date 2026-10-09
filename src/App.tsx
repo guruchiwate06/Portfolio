@@ -132,6 +132,16 @@ export default function App() {
       if (Array.isArray(cloudData.projectsConfig) && cloudData.projectsConfig.length > 0) {
         setProjects(resolvePublicProjects(cloudData.projectsConfig, []));
       }
+      if (cloudData.about) {
+        setAboutText(cloudData.about);
+      }
+      if (Array.isArray(cloudData.skills) && cloudData.skills.length > 0) {
+        setSkills(cloudData.skills);
+      }
+      if (cloudData.settings?.cvUrl) {
+        setCvUrl(cloudData.settings.cvUrl);
+        if (cloudData.settings.cvFileName) setCvFileName(cloudData.settings.cvFileName);
+      }
     });
 
     return () => {

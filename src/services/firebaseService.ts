@@ -8,14 +8,14 @@ import {
 } from 'firebase/firestore';
 import { AchievementItem, ProjectConfig, PortfolioSettings } from '../types/portfolio';
 
-// Firebase configuration loaded from environment variables or local fallback
+// Firebase configuration loaded from environment variables or project fallback
 export const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyB12iS28xPnce4MHSEbMG8PoqGWFwLlTUk',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'rajguruchiwate-portfolio.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'rajguruchiwate-portfolio',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'rajguruchiwate-portfolio.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '322883267805',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:322883267805:web:5fabe952d6a9970612bf34'
 };
 
 export const isFirebaseConfigured = Boolean(

@@ -41,7 +41,7 @@ import {
   defaultSkills 
 } from '../data';
 import { compressImage } from '../utils/imageCompressor';
-import { isFirebaseConfigured } from '../services/firebaseService';
+import { isFirebaseConfigured, saveToFirestore } from '../services/firebaseService';
 import { 
   Save, 
   Plus, 
@@ -703,7 +703,9 @@ export default function AdminPanel() {
       localStorage.setItem('portfolio_about', aboutText);
       const skillsArray = skills.split(',').map(s => s.trim()).filter(s => s);
       localStorage.setItem('portfolio_skills', JSON.stringify(skillsArray));
-      alert('About and Skills updated successfully!');
+      saveToFirestore('about', aboutText).catch(() => {});
+      saveToFirestore('skills', skillsArray).catch(() => {});
+      alert('About and Skills updated successfully and synced to cloud!');
     } catch {
       alert('Error saving About & Skills.');
     }
