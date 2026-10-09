@@ -81,6 +81,7 @@ export const CurvedLoop: FC<CurvedLoopProps> = ({
 
   const onPointerDown = (e: PointerEvent) => {
     if (!interactive) return;
+    if (e.pointerType === 'touch') return;
     dragRef.current = true;
     lastXRef.current = e.clientX;
     velRef.current = 0;

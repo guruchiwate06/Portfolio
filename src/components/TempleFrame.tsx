@@ -5,7 +5,7 @@
 
 import { motion } from 'motion/react';
 import { ReactNode, useRef, useState, useEffect, useMemo } from 'react';
-import { Cpu, Zap, Menu, X } from 'lucide-react';
+import { Cpu, Zap, Menu, X, Github, Linkedin, Lock } from 'lucide-react';
 
 const JOINING_HANDS_BG = new URL('../assets/ancient-joining-hands.webp', import.meta.url).href;
 
@@ -81,13 +81,13 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1 }}
-        className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-4xl px-4 pointer-events-none"
+        className="fixed top-3 sm:top-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-4xl px-3 sm:px-4 pointer-events-none"
       >
-        <div className="flex items-center justify-between pointer-events-auto">
+        <div className="flex items-center justify-between pointer-events-auto gap-2">
           {/* Brand/Logo */}
           <button 
             onClick={() => scrollTo('hero')}
-            className={`font-primary font-extrabold text-xs md:text-sm tracking-[0.2em] uppercase px-4 py-2 rounded-full border backdrop-blur-md transition-all duration-700 cursor-pointer ${
+            className={`font-primary font-extrabold text-[11px] sm:text-xs md:text-sm tracking-[0.15em] sm:tracking-[0.2em] uppercase px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border backdrop-blur-md transition-all duration-700 cursor-pointer shrink-0 ${
               theme === 'ancient'
                 ? 'bg-white/80 border-gold-accent/40 text-stone-ink hover:text-gold-accent shadow-sm'
                 : 'bg-black/80 border-cyan-500/40 text-white hover:text-cyan-400 shadow-[0_0_15px_rgba(0,242,255,0.2)]'
@@ -125,18 +125,18 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
           </nav>
 
           {/* Right Actions: Mobile Toggle & Theme Switcher */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(prev => !prev)}
               aria-label="Toggle Navigation Menu"
-              className={`md:hidden p-2.5 rounded-full border backdrop-blur-md transition-all duration-700 cursor-pointer ${
+              className={`md:hidden p-2 rounded-full border backdrop-blur-md transition-all duration-700 cursor-pointer ${
                 theme === 'ancient'
                   ? 'bg-white/80 border-gold-accent text-stone-ink'
                   : 'bg-black/80 border-cyan-500 text-cyan-400'
               }`}
             >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
 
             {/* Theme Switcher Button */}
@@ -145,7 +145,7 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.92 }}
               aria-label="Toggle Theme"
-              className={`p-2.5 rounded-full border backdrop-blur-md transition-all duration-700 group cursor-pointer ${
+              className={`p-2 sm:p-2.5 rounded-full border backdrop-blur-md transition-all duration-700 group cursor-pointer ${
                 theme === 'ancient' 
                 ? 'bg-white/85 border-gold-accent text-gold-accent shadow-md hover:bg-gold-accent hover:text-white' 
                 : 'bg-black/85 border-cyan-500 text-cyan-400 shadow-[0_0_20px_rgba(0,242,255,0.3)] hover:bg-cyan-500 hover:text-black'
@@ -159,7 +159,7 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
                   }}
                   transition={{ type: "spring", stiffness: 200, damping: 12 }}
                 >
-                  {theme === 'ancient' ? <Cpu size={20} /> : <Zap size={20} />}
+                  {theme === 'ancient' ? <Cpu size={18} /> : <Zap size={18} />}
                 </motion.div>
               </div>
             </motion.button>
@@ -172,9 +172,9 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className={`mt-3 p-4 rounded-2xl border backdrop-blur-xl md:hidden flex flex-col gap-2 pointer-events-auto transition-all ${
+            className={`mt-2.5 p-3 rounded-2xl border backdrop-blur-xl md:hidden flex flex-col gap-1 pointer-events-auto transition-all shadow-2xl ${
               theme === 'ancient'
-                ? 'bg-white/95 border-gold-accent/30 shadow-2xl'
+                ? 'bg-white/95 border-gold-accent/30'
                 : 'bg-black/95 border-cyan-500/40 shadow-[0_0_30px_rgba(0,242,255,0.25)]'
             }`}
           >
@@ -184,7 +184,7 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
                 <button
                   key={item.id}
                   onClick={() => scrollTo(item.id)}
-                  className={`px-4 py-2.5 text-left rounded-xl text-xs font-bold tracking-wider uppercase transition-all cursor-pointer ${
+                  className={`px-3.5 py-2 text-left rounded-xl text-xs font-bold tracking-wider uppercase transition-all cursor-pointer ${
                     isActive
                       ? theme === 'ancient'
                         ? 'text-gold-accent bg-stone-ink/10'
@@ -198,6 +198,38 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
                 </button>
               );
             })}
+
+            {/* Quick Links inside Mobile Menu */}
+            <div className="pt-2 mt-1 border-t border-current/10 flex items-center justify-around px-2 text-xs">
+              <a 
+                href="https://github.com/guruchiwate06" 
+                target="_blank" 
+                rel="noreferrer" 
+                className={`p-2 flex items-center gap-1.5 font-mono text-[11px] ${
+                  theme === 'ancient' ? 'text-stone-ink/70 hover:text-gold-accent' : 'text-cyan-400/70 hover:text-cyan-300'
+                }`}
+              >
+                <Github size={14} /> GitHub
+              </a>
+              <a 
+                href="https://www.linkedin.com/in/rajguru-chiwate-9731772b1" 
+                target="_blank" 
+                rel="noreferrer" 
+                className={`p-2 flex items-center gap-1.5 font-mono text-[11px] ${
+                  theme === 'ancient' ? 'text-stone-ink/70 hover:text-gold-accent' : 'text-cyan-400/70 hover:text-cyan-300'
+                }`}
+              >
+                <Linkedin size={14} /> LinkedIn
+              </a>
+              <a 
+                href="/admin" 
+                className={`p-2 flex items-center gap-1.5 font-mono text-[11px] ${
+                  theme === 'ancient' ? 'text-stone-ink/70 hover:text-gold-accent' : 'text-cyan-400/70 hover:text-cyan-300'
+                }`}
+              >
+                <Lock size={12} /> Admin
+              </a>
+            </div>
           </motion.div>
         )}
       </motion.header>

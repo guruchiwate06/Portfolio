@@ -223,9 +223,9 @@ export default function App() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Fixed Socials - Bottom Left */}
+      {/* Fixed Socials - Bottom Left (Desktop only; on mobile available in header & footer) */}
       <motion.div 
-        className="fixed bottom-8 left-8 z-[100] flex flex-col gap-6"
+        className="hidden md:flex fixed bottom-8 left-8 z-[100] flex-col gap-6"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 1.5, duration: 1 }}
@@ -299,10 +299,10 @@ export default function App() {
              animate={{ opacity: 1 }}
              transition={{ duration: 0.8, ease: "easeOut" }}
              className={`transition-all duration-1000 ${
-               theme === 'ancient' 
-               ? 'pt-10 sm:pt-14 pb-8 sm:pb-10 px-6 sm:px-12 md:px-18 bg-white/30 backdrop-blur-md rounded-[3rem] border border-gold-accent/10 shadow-[0_20px_50px_rgba(0,0,0,0.05)]' 
-               : 'pt-10 sm:pt-14 pb-8 sm:pb-10 px-6 sm:px-12 md:px-16 bg-cyan-950/20 backdrop-blur-md rounded-[2.5rem] border border-cyan-500/20 shadow-[0_0_50px_rgba(0,242,255,0.05)]'
-             } text-center relative z-20 w-full max-w-4xl`}
+                theme === 'ancient' 
+                ? 'pt-8 sm:pt-14 pb-7 sm:pb-10 px-4 sm:px-12 md:px-18 bg-white/30 backdrop-blur-md rounded-[2rem] sm:rounded-[3rem] border border-gold-accent/10 shadow-[0_20px_50px_rgba(0,0,0,0.05)]' 
+                : 'pt-8 sm:pt-14 pb-7 sm:pb-10 px-4 sm:px-12 md:px-16 bg-cyan-950/20 backdrop-blur-md rounded-[1.8rem] sm:rounded-[2.5rem] border border-cyan-500/20 shadow-[0_0_50px_rgba(0,242,255,0.05)]'
+              } text-center relative z-20 w-full max-w-4xl`}
           >
             {/* Tilted Faint </> Code Mesh Background inside Hero Card */}
             <div 
@@ -339,12 +339,12 @@ export default function App() {
                 <rect width="100%" height="100%" fill="url(#card-code-mesh)" />
               </svg>
             </div>
-            <span className={`uppercase tracking-[0.6em] text-xs block mb-5 sm:mb-6 transition-colors duration-1000 ${theme === 'ancient' ? 'font-primary font-bold text-gold-accent' : 'font-mono text-cyan-400'}`}>
+            <span className={`uppercase tracking-[0.4em] sm:tracking-[0.6em] text-[10px] sm:text-xs block mb-4 sm:mb-6 transition-colors duration-1000 ${theme === 'ancient' ? 'font-primary font-bold text-gold-accent' : 'font-mono text-cyan-400'}`}>
               Architect of Artificial Intelligence
             </span>
             
-            {/* Staggered Typography with Action Figure Seated on HI of CHIWATE */}
-            <h1 className={`text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tighter leading-[0.9] uppercase transition-all duration-1000 select-none ${
+            {/* Staggered Typography with Action Figure Seated on AT of CHIWATE */}
+            <h1 className={`text-[2.65rem] min-[400px]:text-[3.2rem] sm:text-7xl md:text-8xl lg:text-9xl tracking-tighter leading-[0.9] uppercase transition-all duration-1000 select-none ${
               theme === 'ancient' ? 'font-primary font-extrabold text-ancient-dark' : 'font-primary font-extrabold text-white italic'
             }`}>
               <div className="relative inline-flex flex-col items-center w-full max-w-4xl mx-auto">
@@ -354,14 +354,18 @@ export default function App() {
                 </div>
 
                 {/* Second Word: CHIWATE (Shifted / Indented to Right) */}
-                <div className="w-full text-right flex justify-end items-baseline tracking-tighter pl-6 sm:pl-16 md:pl-28 lg:pl-36">
+                <div className="w-full text-right flex justify-end items-baseline tracking-tighter pl-3 sm:pl-12 md:pl-24 lg:pl-36">
                   <span>CHIW</span>
                   
-                  {/* Letters AT with 3D Action Figure and body-contour shadow behind letters */}
-                  <span className="relative inline-block">
+                  {/* Letters AT with 3D Action Figure locked in proportional em units */}
+                  <span className="relative inline-flex items-baseline justify-center">
                     {/* Exact Body-Contour Silhouette Shadow placed BEHIND the letters (-z-10) */}
                     <div 
-                      className="absolute -top-[70%] sm:-top-[81%] md:-top-[90%] lg:-top-[96%] left-1/2 -translate-x-[48%] w-[90px] sm:w-[130px] md:w-[170px] lg:w-[200px] -z-10 pointer-events-none select-none"
+                      className="absolute left-1/2 -translate-x-[48%] -z-10 pointer-events-none select-none"
+                      style={{
+                        width: '1.55em',
+                        bottom: '0.42em',
+                      }}
                     >
                       <img 
                         src={AVATAR_FIGURE_URL} 
@@ -382,8 +386,10 @@ export default function App() {
 
                     {/* 3D Action Figure perched on top of AT */}
                     <div
-                      className="absolute -top-[70%] sm:-top-[81%] md:-top-[90%] lg:-top-[96%] left-1/2 -translate-x-[48%] w-[90px] sm:w-[130px] md:w-[170px] lg:w-[200px] z-20 pointer-events-none select-none"
+                      className="absolute left-1/2 -translate-x-[48%] z-20 pointer-events-none select-none"
                       style={{
+                        width: '1.55em',
+                        bottom: '0.42em',
                         transformStyle: 'preserve-3d',
                       }}
                     >
@@ -459,12 +465,12 @@ export default function App() {
       </section>
 
       {/* 2. About Section */}
-      <section id="about" className="py-32 px-6 scroll-mt-24">
+      <section id="about" className="py-20 sm:py-28 md:py-32 px-4 sm:px-6 scroll-mt-24">
         <motion.div 
           {...fadeUp}
           className="max-w-3xl mx-auto"
         >
-          <div className={`stone-card p-8 md:p-16 relative overflow-hidden transition-all duration-1000 ${
+          <div className={`stone-card p-6 sm:p-10 md:p-16 relative overflow-hidden transition-all duration-1000 ${
             theme === 'modern' 
             ? 'bg-transparent border border-blue-500/30 rounded-2xl shadow-none' 
             : 'rounded-xl border-2 border-stone-ink/5 bg-white/40 shadow-2xl backdrop-blur-sm'
@@ -505,9 +511,9 @@ export default function App() {
       </section>
 
       {/* 3. Projects Section */}
-      <section id="projects" className="py-32 px-6 relative z-10 scroll-mt-24">
+      <section id="projects" className="py-20 sm:py-28 md:py-32 px-4 sm:px-6 relative z-10 scroll-mt-24">
         <div className="max-w-5xl mx-auto">
-           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 border-b pb-4">
+           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 border-b pb-4">
              <h2 className={`text-2xl md:text-4xl uppercase tracking-widest inline-block font-primary font-extrabold transition-colors duration-1000 ${theme === 'ancient' ? 'text-gold-accent border-gold-accent' : 'text-cyan-400 border-cyan-400'}`}>
                Projects
              </h2>
@@ -516,7 +522,7 @@ export default function App() {
              </span>
            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-6 sm:mt-8">
             {projects.map((proj) => (
               <motion.div
                 key={proj.id}
@@ -526,7 +532,7 @@ export default function App() {
                   const targetUrl = proj.liveDemoUrl || proj.githubUrl;
                   if (targetUrl) window.open(targetUrl, '_blank', 'noopener,noreferrer');
                 }}
-                className={`stone-card p-8 transition-all duration-700 relative group overflow-hidden flex flex-col justify-between cursor-pointer ${
+                className={`stone-card p-5 sm:p-8 transition-all duration-700 relative group overflow-hidden flex flex-col justify-between cursor-pointer ${
                   theme === 'ancient' 
                   ? 'bg-white/50 border border-black/5 border-l-4 border-l-stone-ink shadow-lg hover:shadow-2xl' 
                   : 'bg-black/40 border border-blue-500/30 rounded-2xl hover:border-cyan-400 hover:shadow-[0_0_25px_rgba(0,242,255,0.15)]'
@@ -676,29 +682,29 @@ export default function App() {
       </section>
 
       {/* 4. Skills Section */}
-      <section id="skills" className="py-32 overflow-hidden relative scroll-mt-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-16">
+      <section id="skills" className="py-20 sm:py-28 md:py-32 overflow-hidden relative scroll-mt-24">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-16">
             <h2 className={`text-2xl md:text-4xl uppercase tracking-widest border-b pb-2 inline-block font-primary font-extrabold transition-colors duration-1000 ${theme === 'ancient' ? 'text-gold-accent border-gold-accent' : 'text-cyan-400 border-cyan-400'}`}>
               Skills
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {skills.map((skill, i) => (
               <motion.div
                 key={skill}
                 {...fadeUp}
                 transition={{ delay: i * 0.04 }}
                 whileHover={{ scale: 1.03 }}
-                className={`stone-card flex items-center p-6 gap-4 border transition-all duration-500 ${
+                className={`stone-card flex items-center p-3.5 sm:p-6 gap-2.5 sm:gap-4 border transition-all duration-500 ${
                   theme === 'ancient' 
                   ? 'bg-white/50 border-black/5 hover:border-gold-accent hover:shadow-xl' 
-                  : 'bg-black/40 border-blue-500/30 rounded-2xl hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(0,242,255,0.2)]'
+                  : 'bg-black/40 border-blue-500/30 rounded-xl sm:rounded-2xl hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(0,242,255,0.2)]'
                 }`}
               >
-                <div className={`w-2.5 h-2.5 rounded-full border shrink-0 transition-colors duration-500 ${theme === 'ancient' ? 'border-gold-accent bg-gold-accent' : 'border-cyan-400 bg-cyan-400 shadow-[0_0_8px_cyan]'}`} />
-                <span className={`font-primary font-bold text-sm tracking-widest uppercase transition-colors duration-500 ${theme === 'ancient' ? 'text-ancient-dark' : 'text-cyan-100'}`}>{skill}</span>
+                <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border shrink-0 transition-colors duration-500 ${theme === 'ancient' ? 'border-gold-accent bg-gold-accent' : 'border-cyan-400 bg-cyan-400 shadow-[0_0_8px_cyan]'}`} />
+                <span className={`font-primary font-bold text-xs sm:text-sm tracking-wider sm:tracking-widest uppercase transition-colors duration-500 truncate ${theme === 'ancient' ? 'text-ancient-dark' : 'text-cyan-100'}`}>{skill}</span>
               </motion.div>
             ))}
           </div>
@@ -706,9 +712,9 @@ export default function App() {
       </section>
 
       {/* 5. Achievements & Research Section */}
-      <section id="achievements" className="py-32 px-6 relative z-10 scroll-mt-24">
+      <section id="achievements" className="py-20 sm:py-28 md:py-32 px-4 sm:px-6 relative z-10 scroll-mt-24">
         <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 border-b pb-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 border-b pb-4">
             <h2 className={`text-2xl md:text-4xl uppercase tracking-widest inline-block font-primary font-extrabold transition-colors duration-1000 ${theme === 'ancient' ? 'text-gold-accent border-gold-accent' : 'text-cyan-400 border-cyan-400'}`}>
               Achievements & Research
             </h2>
@@ -717,7 +723,7 @@ export default function App() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
             {achievements.map((item, idx) => {
               const connectedProject = item.projectId 
                 ? projects.find(p => p.id === item.projectId || p.repoName?.toLowerCase() === item.projectId?.toLowerCase())
@@ -729,7 +735,7 @@ export default function App() {
                   {...fadeUp}
                   transition={{ delay: idx * 0.05 }}
                   whileHover={{ y: -5 }}
-                  className={`stone-card p-8 transition-all duration-700 relative group overflow-hidden flex flex-col justify-between ${
+                  className={`stone-card p-5 sm:p-8 transition-all duration-700 relative group overflow-hidden flex flex-col justify-between ${
                     theme === 'ancient' 
                     ? 'bg-white/50 border border-black/5 shadow-lg hover:shadow-2xl' 
                     : 'bg-black/40 border border-blue-500/30 rounded-2xl hover:border-cyan-400 hover:shadow-[0_0_25px_rgba(0,242,255,0.15)]'
@@ -739,7 +745,7 @@ export default function App() {
                     {/* Achievement Photo / Banner / Post */}
                     {item.imageUrl && (
                       <div 
-                        className={`relative -mx-8 -mt-8 mb-5 overflow-hidden rounded-t-2xl border-b transition-all duration-300 cursor-pointer group/img flex items-center justify-center ${
+                        className={`relative -mx-5 -mt-5 sm:-mx-8 sm:-mt-8 mb-4 sm:mb-5 overflow-hidden rounded-t-xl sm:rounded-t-2xl border-b transition-all duration-300 cursor-pointer group/img flex items-center justify-center ${
                           theme === 'ancient' 
                             ? 'bg-stone-100/90 border-stone-ink/10' 
                             : 'bg-black/60 border-cyan-500/20'
@@ -859,9 +865,9 @@ export default function App() {
       </section>
 
       {/* 6. Contact Section */}
-      <section id="contact" className="py-36 px-6 relative overflow-hidden scroll-mt-24">
+      <section id="contact" className="py-20 sm:py-28 md:py-32 px-4 sm:px-6 relative overflow-hidden scroll-mt-24">
         <div className="max-w-xl mx-auto relative z-10">
-          <div className={`terminal-parchment p-8 md:p-10 font-sans shadow-2xl relative transition-all duration-1000 ${
+          <div className={`terminal-parchment p-6 sm:p-8 md:p-10 font-sans shadow-2xl relative transition-all duration-1000 ${
             theme === 'ancient' 
             ? 'bg-white/85 border border-black/5 shadow-2x-stone rounded-2xl' 
             : 'bg-black/60 border border-cyan-500/40 rounded-2xl shadow-[0_0_30px_rgba(0,242,255,0.15)]'
@@ -884,11 +890,11 @@ export default function App() {
                   Feel free to reach out directly for collaborations, research, or new opportunities:
                 </p>
                 
-                <div className={`p-5 rounded-xl transition-all duration-1000 ${theme === 'ancient' ? 'bg-white/50 border border-gold-accent/20' : 'bg-black/40 border border-cyan-500/20'}`}>
+                <div className={`p-4 sm:p-5 rounded-xl transition-all duration-1000 ${theme === 'ancient' ? 'bg-white/50 border border-gold-accent/20' : 'bg-black/40 border border-cyan-500/20'}`}>
                    <span className={`text-xs block mb-1 uppercase tracking-widest ${theme === 'ancient' ? 'text-gold-accent font-bold' : 'text-cyan-400 font-mono'}`}>Direct Email</span>
                    <a 
                      href="mailto:guruchiwate@gmail.com" 
-                     className={`text-lg md:text-xl font-bold tracking-wide hover:underline transition-colors duration-500 ${theme === 'ancient' ? 'text-stone-ink hover:text-gold-accent' : 'text-white hover:text-cyan-300'}`}
+                     className={`text-base sm:text-lg md:text-xl font-bold tracking-wide hover:underline transition-colors duration-500 break-all ${theme === 'ancient' ? 'text-stone-ink hover:text-gold-accent' : 'text-white hover:text-cyan-300'}`}
                    >
                      guruchiwate@gmail.com
                    </a>
@@ -955,17 +961,41 @@ export default function App() {
       </div>
 
       {/* Footer */}
-      <footer className={`py-12 border-t text-center font-primary font-bold text-xs tracking-[0.3em] opacity-60 transition-all duration-1000 relative flex items-center justify-center gap-6 ${theme === 'ancient' ? 'border-ancient-dark/10 text-stone-ink' : 'border-cyan-500/10 text-cyan-400'}`}>
+      <footer className={`py-12 border-t text-center font-primary font-bold text-xs tracking-[0.2em] opacity-80 transition-all duration-1000 relative flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 px-4 ${theme === 'ancient' ? 'border-ancient-dark/10 text-stone-ink' : 'border-cyan-500/10 text-cyan-400'}`}>
         <span>© 2026 RAJGURU CHIWATE • ALL RIGHTS RESERVED</span>
-        <a 
-          href="/admin" 
-          title="Admin Access" 
-          className={`transition-colors hover:scale-110 inline-flex items-center gap-1 normal-case tracking-normal text-[11px] font-mono ${
-            theme === 'ancient' ? 'text-stone-ink/40 hover:text-gold-accent' : 'text-cyan-500/40 hover:text-cyan-300'
-          }`}
-        >
-          <Lock size={12} /> Admin
-        </a>
+        <div className="flex items-center gap-4">
+          <a 
+            href="https://github.com/guruchiwate06" 
+            target="_blank" 
+            rel="noreferrer" 
+            aria-label="GitHub Profile"
+            className={`p-1.5 rounded transition-all hover:scale-110 ${
+              theme === 'ancient' ? 'text-stone-ink/60 hover:text-gold-accent' : 'text-cyan-500/60 hover:text-cyan-300'
+            }`}
+          >
+            <Github size={15} />
+          </a>
+          <a 
+            href="https://www.linkedin.com/in/rajguru-chiwate-9731772b1" 
+            target="_blank" 
+            rel="noreferrer" 
+            aria-label="LinkedIn Profile"
+            className={`p-1.5 rounded transition-all hover:scale-110 ${
+              theme === 'ancient' ? 'text-stone-ink/60 hover:text-gold-accent' : 'text-cyan-500/60 hover:text-cyan-300'
+            }`}
+          >
+            <Linkedin size={15} />
+          </a>
+          <a 
+            href="/admin" 
+            title="Admin Access" 
+            className={`transition-colors hover:scale-110 inline-flex items-center gap-1 normal-case tracking-normal text-[11px] font-mono ${
+              theme === 'ancient' ? 'text-stone-ink/50 hover:text-gold-accent' : 'text-cyan-500/50 hover:text-cyan-300'
+            }`}
+          >
+            <Lock size={12} /> Admin
+          </a>
+        </div>
       </footer>
 
       {/* Full Image Preview Lightbox Modal */}

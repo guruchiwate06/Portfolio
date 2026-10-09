@@ -73,6 +73,9 @@
   }
   html {
     @apply font-sans;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
