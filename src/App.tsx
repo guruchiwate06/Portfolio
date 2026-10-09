@@ -354,7 +354,7 @@ export default function App() {
             </span>
             
             {/* Staggered Typography with Action Figure Seated on AT of CHIWATE */}
-            <h1 className={`text-[2.65rem] min-[400px]:text-[3.2rem] sm:text-7xl md:text-8xl lg:text-9xl tracking-tighter leading-[0.9] uppercase transition-all duration-1000 select-none ${
+            <h1 className={`text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tighter leading-[0.9] uppercase transition-all duration-1000 select-none ${
               theme === 'ancient' ? 'font-primary font-extrabold text-ancient-dark' : 'font-primary font-extrabold text-white italic'
             }`}>
               <div className="relative inline-flex flex-col items-center w-full max-w-4xl mx-auto">
@@ -364,18 +364,14 @@ export default function App() {
                 </div>
 
                 {/* Second Word: CHIWATE (Shifted / Indented to Right) */}
-                <div className="w-full text-right flex justify-end items-baseline tracking-tighter pl-3 sm:pl-12 md:pl-24 lg:pl-36">
+                <div className="w-full text-right flex justify-end items-baseline tracking-tighter pl-6 sm:pl-16 md:pl-28 lg:pl-36">
                   <span>CHIW</span>
                   
-                  {/* Letters AT with 3D Action Figure locked in proportional em units */}
-                  <span className="relative inline-flex items-baseline justify-center">
+                  {/* Letters AT with 3D Action Figure and body-contour shadow behind letters */}
+                  <span className="relative inline-block">
                     {/* Exact Body-Contour Silhouette Shadow placed BEHIND the letters (-z-10) */}
                     <div 
-                      className="absolute left-1/2 -translate-x-[48%] -z-10 pointer-events-none select-none"
-                      style={{
-                        width: '1.55em',
-                        bottom: '0.42em',
-                      }}
+                      className="absolute -top-[70%] sm:-top-[81%] md:-top-[90%] lg:-top-[96%] left-1/2 -translate-x-[48%] w-[90px] sm:w-[130px] md:w-[170px] lg:w-[200px] -z-10 pointer-events-none select-none"
                     >
                       <img 
                         src={AVATAR_FIGURE_URL} 
@@ -396,10 +392,8 @@ export default function App() {
 
                     {/* 3D Action Figure perched on top of AT */}
                     <div
-                      className="absolute left-1/2 -translate-x-[48%] z-20 pointer-events-none select-none"
+                      className="absolute -top-[70%] sm:-top-[81%] md:-top-[90%] lg:-top-[96%] left-1/2 -translate-x-[48%] w-[90px] sm:w-[130px] md:w-[170px] lg:w-[200px] z-20 pointer-events-none select-none"
                       style={{
-                        width: '1.55em',
-                        bottom: '0.42em',
                         transformStyle: 'preserve-3d',
                       }}
                     >
