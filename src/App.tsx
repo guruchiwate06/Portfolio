@@ -388,14 +388,14 @@ export default function App() {
                 </div>
 
                 {/* Second Word: CHIWATE (Shifted / Indented to Right) */}
-                <div className="w-full text-right flex justify-end items-baseline tracking-tighter pl-6 sm:pl-16 md:pl-28 lg:pl-36">
+                <div className="w-full text-right flex justify-end items-baseline tracking-tighter pl-6 sm:pl-16 md:pl-28 lg:pl-36 mt-1.5 sm:mt-0">
                   <span>CHIW</span>
                   
                   {/* Letters AT with 3D Action Figure and body-contour shadow behind letters */}
                   <span className="relative inline-block">
                     {/* Exact Body-Contour Silhouette Shadow placed BEHIND the letters (-z-10) */}
                     <div 
-                      className="absolute -top-[70%] sm:-top-[81%] md:-top-[90%] lg:-top-[96%] left-1/2 -translate-x-[48%] w-[90px] sm:w-[130px] md:w-[170px] lg:w-[200px] -z-10 pointer-events-none select-none"
+                      className="absolute -top-[95%] sm:-top-[81%] md:-top-[90%] lg:-top-[96%] left-1/2 -translate-x-[48%] w-[60px] sm:w-[130px] md:w-[170px] lg:w-[200px] -z-10 pointer-events-none select-none"
                     >
                       <img 
                         src={AVATAR_FIGURE_URL} 
@@ -416,7 +416,7 @@ export default function App() {
 
                     {/* 3D Action Figure perched on top of AT */}
                     <div
-                      className="absolute -top-[70%] sm:-top-[81%] md:-top-[90%] lg:-top-[96%] left-1/2 -translate-x-[48%] w-[90px] sm:w-[130px] md:w-[170px] lg:w-[200px] z-20 pointer-events-none select-none"
+                      className="absolute -top-[95%] sm:-top-[81%] md:-top-[90%] lg:-top-[96%] left-1/2 -translate-x-[48%] w-[60px] sm:w-[130px] md:w-[170px] lg:w-[200px] z-20 pointer-events-none select-none"
                       style={{
                         transformStyle: 'preserve-3d',
                       }}
@@ -799,9 +799,9 @@ export default function App() {
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center justify-between gap-2 mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-2 mb-4">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2.5 rounded-xl border transition-colors duration-500 ${
+                        <div className={`p-2.5 rounded-xl border shrink-0 transition-colors duration-500 ${
                           theme === 'ancient' 
                             ? 'bg-gold-accent/10 border-gold-accent/30' 
                             : 'bg-cyan-950/60 border-cyan-500/30 shadow-[0_0_12px_rgba(0,242,255,0.2)]'
@@ -834,7 +834,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full border ${
+                      <span className={`self-start sm:self-auto text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full border whitespace-nowrap shrink-0 ${
                         theme === 'ancient'
                           ? 'border-gold-accent/40 bg-gold-accent/5 text-stone-ink'
                           : 'border-cyan-400/40 bg-cyan-500/10 text-cyan-300 shadow-[0_0_8px_rgba(0,242,255,0.2)]'
