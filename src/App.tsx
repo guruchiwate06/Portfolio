@@ -288,14 +288,6 @@ export default function App() {
             )}
           </div>
         </motion.div>
-        <motion.div 
-          className="binary-stream"
-          initial={{ opacity: 0.03 }}
-          animate={{ opacity: theme === 'ancient' ? 0.03 : 0 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-        >
-          10101101001011010110010101101001011010110
-        </motion.div>
       </div>
 
       {/* 1. Hero Section */}
