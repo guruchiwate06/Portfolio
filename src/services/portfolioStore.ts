@@ -649,6 +649,8 @@ export async function initFromServer(): Promise<boolean> {
       signal: AbortSignal.timeout(2000)
     });
     if (!res.ok) return false;
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return false;
 
     const data = await res.json();
 
