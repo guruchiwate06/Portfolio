@@ -90,6 +90,33 @@ export default defineConfig(({mode}) => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/firebase/')) {
+              return 'vendor-firebase';
+            }
+            if (id.includes('node_modules/motion') || id.includes('node_modules/motion-dom')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('node_modules/ogl/')) {
+              return 'vendor-ogl';
+            }
+            if (id.includes('node_modules/@simplewebauthn/')) {
+              return 'vendor-webauthn';
+            }
+            if (
+              id.includes('node_modules/react/') || 
+              id.includes('node_modules/react-dom/') || 
+              id.includes('node_modules/react-router-dom/')
+            ) {
+              return 'vendor-react';
+            }
+          }
+        }
+      }
+    },
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: {

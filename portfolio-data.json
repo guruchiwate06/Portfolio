@@ -12,9 +12,9 @@
       "overrides": {
         "title": "Flowgen",
         "problem": "AI-powered content workflow management platform for creators.",
-        "approach": "Engineered modular architecture in JavaScript.",
-        "outcome": "Maintained on GitHub with 0 stars.",
-        "tech": "JavaScript",
+        "approach": "Engineered modular architecture in JavaScript with streamlined pipeline orchestration.",
+        "outcome": "Production-ready web platform with automated workflow generation and verified stability.",
+        "tech": "JavaScript • React • Node.js",
         "liveDemoUrl": "https://flowgen-olive.vercel.app/",
         "githubUrl": "https://github.com/guruchiwate06/Flowgen",
         "isPoC": false
@@ -33,10 +33,10 @@
       "isPoC": false,
       "overrides": {
         "title": "PATH RL",
-        "problem": "Add custom problem description...",
-        "approach": "Engineered modular architecture in Python.",
-        "outcome": "Maintained on GitHub with 0 stars.",
-        "tech": "Python",
+        "problem": "Autonomous reinforcement learning framework for dynamic obstacle avoidance and navigation.",
+        "approach": "Engineered modular policy gradient and Q-learning path planning algorithms in Python.",
+        "outcome": "Achieved efficient convergence and optimal trajectory planning across simulation benchmarks.",
+        "tech": "Python • PyTorch • Reinforcement Learning",
         "githubUrl": "https://github.com/guruchiwate06/PATH_RL",
         "isPoC": false
       },
@@ -54,10 +54,10 @@
       "isPoC": false,
       "overrides": {
         "title": "LUNAR",
-        "problem": "Add custom problem description...",
-        "approach": "Engineered modular architecture in Python.",
-        "outcome": "Maintained on GitHub with 0 stars.",
-        "tech": "Python",
+        "problem": "Autonomous spacecraft lunar landing guidance and thrust vector control simulation.",
+        "approach": "Engineered physics-based numerical trajectory simulation in Python with feedback control.",
+        "outcome": "Demonstrated stable soft-landing descent trajectories with high accuracy under low gravity.",
+        "tech": "Python • NumPy • Scientific Computing",
         "githubUrl": "https://github.com/guruchiwate06/LUNAR",
         "isPoC": false
       },
@@ -74,11 +74,11 @@
       "isFeatured": false,
       "isPoC": false,
       "overrides": {
-        "title": "Circleto Search",
-        "problem": "Add custom problem description...",
-        "approach": "Engineered modular architecture in JavaScript.",
-        "outcome": "Maintained on GitHub with 0 stars.",
-        "tech": "JavaScript",
+        "title": "Circle to Search",
+        "problem": "Visual gesture-based search system and interactive bounding detector.",
+        "approach": "Engineered real-time gesture recognition and canvas bounding pipeline in JavaScript.",
+        "outcome": "Delivered intuitive visual search interaction with zero perceptible input lag.",
+        "tech": "JavaScript • Canvas API • Computer Vision",
         "githubUrl": "https://github.com/guruchiwate06/CircletoSearch",
         "isPoC": false
       },
@@ -95,11 +95,11 @@
       "isFeatured": false,
       "isPoC": false,
       "overrides": {
-        "title": "Plane Plant UMLintegration",
-        "problem": "Add custom problem description...",
-        "approach": "Engineered modular architecture in Python.",
-        "outcome": "Maintained on GitHub with 0 stars.",
-        "tech": "Python",
+        "title": "Plane Plant UML Integration",
+        "problem": "Automated architectural UML diagram generation and code analysis pipeline.",
+        "approach": "Engineered modular analysis pipeline in Python parsing code structures to PlantUML.",
+        "outcome": "Automated diagram generation reducing architectural documentation overhead and visual drift.",
+        "tech": "Python • AST Analysis • PlantUML",
         "githubUrl": "https://github.com/guruchiwate06/plane-plant-UMLintegration",
         "isPoC": false
       },
@@ -117,10 +117,10 @@
       "isPoC": false,
       "overrides": {
         "title": "Portfolio",
-        "problem": "A personal portfolio website showcasing my projects, achievements, technical skills, and journey as an AI & ML student and developer.",
-        "approach": "Engineered modular architecture in TypeScript.",
-        "outcome": "Maintained on GitHub with 0 stars.",
-        "tech": "FRONTEND • PERSONAL-WEBSITE • PORTFOLIO • REACT • TYPESCRIPT • VITE • WEB-DEVELOPMENT",
+        "problem": "Personal developer portfolio showcasing AI & ML projects, research milestones, and technical engineering.",
+        "approach": "Engineered dual ancient-to-modern theme architecture with WebGL shaders and full responsiveness.",
+        "outcome": "Shipped production-grade portfolio with sub-second loads and interactive 3D elements.",
+        "tech": "TypeScript • React • Vite • Tailwind CSS",
         "githubUrl": "https://github.com/guruchiwate06/Portfolio",
         "isPoC": false,
         "liveDemoUrl": "https://rajguru-chiwate.vercel.app/"

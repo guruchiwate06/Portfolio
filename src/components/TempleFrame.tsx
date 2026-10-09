@@ -62,6 +62,17 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
     }
   };
 
+  // Close mobile menu on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
   const particles = useMemo(() => {
     return Array.from({ length: 8 }).map((_, i) => ({
       id: i,
@@ -130,6 +141,8 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
             <button
               onClick={() => setMobileMenuOpen(prev => !prev)}
               aria-label="Toggle Navigation Menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-nav-dropdown"
               className={`md:hidden p-2 rounded-full border backdrop-blur-md transition-all duration-700 cursor-pointer ${
                 theme === 'ancient'
                   ? 'bg-white/80 border-gold-accent text-stone-ink'
@@ -168,16 +181,23 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
 
         {/* Mobile Dropdown Nav */}
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className={`mt-2.5 p-3 rounded-2xl border backdrop-blur-xl md:hidden flex flex-col gap-1 pointer-events-auto transition-all shadow-2xl ${
-              theme === 'ancient'
-                ? 'bg-white/95 border-gold-accent/30'
-                : 'bg-black/95 border-cyan-500/40 shadow-[0_0_30px_rgba(0,242,255,0.25)]'
-            }`}
-          >
+          <>
+            <div 
+              className="fixed inset-0 z-[-1] pointer-events-auto bg-black/20 backdrop-blur-[2px] md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <motion.div
+              id="mobile-nav-dropdown"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className={`mt-2.5 p-3 rounded-2xl border backdrop-blur-xl md:hidden flex flex-col gap-1 pointer-events-auto transition-all shadow-2xl ${
+                theme === 'ancient'
+                  ? 'bg-white/95 border-gold-accent/30'
+                  : 'bg-black/95 border-cyan-500/40 shadow-[0_0_30px_rgba(0,242,255,0.25)]'
+              }`}
+            >
             {navItems.map((item) => {
               const isActive = activeSection === item.id;
               return (
@@ -231,6 +251,7 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
               </a>
             </div>
           </motion.div>
+          </>
         )}
       </motion.header>
 

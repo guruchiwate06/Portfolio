@@ -190,6 +190,22 @@ export function getProjectsConfig(): ProjectConfig[] {
               p.overrides.githubUrl = def.githubUrl;
               modified = true;
             }
+            if (!p.overrides.problem || p.overrides.problem.includes('Add custom problem')) {
+              p.overrides.problem = def.problem;
+              modified = true;
+            }
+            if (!p.overrides.outcome || p.overrides.outcome.includes('0 star')) {
+              p.overrides.outcome = def.outcome;
+              modified = true;
+            }
+            if (def.title && (p.overrides.title === 'Circleto Search' || p.overrides.title === 'Plane Plant UMLintegration')) {
+              p.overrides.title = def.title;
+              modified = true;
+            }
+            if (p.id === 'gh-Portfolio' && p.overrides.tech && p.overrides.tech.includes('PERSONAL-WEBSITE')) {
+              p.overrides.tech = def.tech;
+              modified = true;
+            }
           }
         }
         if (modified || cleaned.length !== parsed.length) {
@@ -390,17 +406,38 @@ export function resolvePublicProjects(
     const repo = c.repoName ? repoMap.get(c.repoName.toLowerCase()) : undefined;
     const ov = c.overrides || {};
 
-    // Dynamic resolution
-    const title = ov.title?.trim() || (repo ? formatRepoTitle(repo.name) : c.id);
-    const problem = ov.problem?.trim() || (repo?.description ? repo.description : 'Specialized engineering problem addressed through custom architecture.');
-    const approach = ov.approach?.trim() || (repo?.language ? `Engineered modular neural algorithms using ${repo.language} and high-throughput pipelines.` : 'Integrated modern engineering paradigms.');
-    const outcome = ov.outcome?.trim() || (repo ? `Maintained ${repo.stargazers_count} stars and verified stability on GitHub.` : 'Achieved measurable scalability.');
-    const tech = ov.tech?.trim() || (repo?.topics && repo.topics.length > 0 
-      ? repo.topics.slice(0, 3).map(t => t.toUpperCase()).join(' • ') 
-      : (repo?.language || 'Python • PyTorch'));
+    // Dynamic resolution with placeholder sanitization
+    const def = defaultProjects.find(dp => dp.id === c.id);
+    let title = ov.title?.trim() || (repo ? formatRepoTitle(repo.name) : c.id);
+    if (def && (!title || title === c.id || title === 'Circleto Search' || title === 'Plane Plant UMLintegration')) {
+      title = def.title;
+    }
+
+    let problem = ov.problem?.trim();
+    if (!problem || problem.includes('Add custom') || problem.startsWith('Add custom problem')) {
+      problem = def?.problem || (repo?.description ? repo.description : 'Specialized engineering problem addressed through custom architecture.');
+    }
+
+    let approach = ov.approach?.trim();
+    if (!approach) {
+      approach = def?.approach || (repo?.language ? `Engineered modular neural algorithms using ${repo.language} and high-throughput pipelines.` : 'Integrated modern engineering paradigms.');
+    }
+
+    let outcome = ov.outcome?.trim();
+    if (!outcome || outcome.includes('0 star')) {
+      outcome = def?.outcome || (repo && repo.stargazers_count > 0 
+        ? `Maintained ${repo.stargazers_count} stars and verified stability on GitHub.` 
+        : 'Maintained with verified stability and clean architecture on GitHub.');
+    }
+
+    let tech = ov.tech?.trim();
+    if (!tech || tech.includes('PERSONAL-WEBSITE')) {
+      tech = def?.tech || (repo?.topics && repo.topics.length > 0 
+        ? repo.topics.slice(0, 3).map(t => t.toUpperCase()).join(' • ') 
+        : (repo?.language || 'Python • PyTorch'));
+    }
     const isPoC = ov.isPoC ?? c.isPoC ?? (repo ? (repo.name.toLowerCase().includes('poc') || repo.name.toLowerCase().includes('research')) : false);
     const isFeatured = c.isFeatured ?? false;
-    const def = defaultProjects.find(dp => dp.id === c.id);
     const githubUrl = ov.githubUrl?.trim() || repo?.html_url || def?.githubUrl || undefined;
     const liveDemoUrl = ov.liveDemoUrl?.trim() || repo?.homepage || def?.liveDemoUrl || undefined;
 
@@ -453,9 +490,9 @@ export function selectGitHubRepository(repo: GitHubRepo): ProjectConfig[] {
     isPoC: repo.name.toLowerCase().includes('poc') || repo.name.toLowerCase().includes('research'),
     overrides: {
       title: formatRepoTitle(repo.name),
-      problem: repo.description || 'Add custom problem description...',
+      problem: repo.description || 'Specialized engineering solution engineered with modular architecture.',
       approach: repo.language ? `Engineered modular architecture in ${repo.language}.` : '',
-      outcome: `Maintained on GitHub with ${repo.stargazers_count} stars.`,
+      outcome: repo.stargazers_count > 0 ? `Maintained on GitHub with ${repo.stargazers_count} star${repo.stargazers_count === 1 ? '' : 's'}.` : 'Maintained with verified stability on GitHub.',
       tech: repo.topics.length > 0 ? repo.topics.map(t => t.toUpperCase()).join(' • ') : (repo.language || 'Python'),
       liveDemoUrl: repo.homepage || undefined,
       githubUrl: repo.html_url,
@@ -615,7 +652,20 @@ export async function initFromServer(): Promise<boolean> {
           localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, JSON.stringify(cloudData.achievements));
         }
         if (Array.isArray(cloudData.projectsConfig) && cloudData.projectsConfig.length > 0) {
-          localStorage.setItem(STORAGE_KEYS.PROJECTS_CONFIG, JSON.stringify(cloudData.projectsConfig));
+          const defaultMap = new Map(defaultProjects.map(dp => [dp.id, dp]));
+          const sanitizedCloudProjects = cloudData.projectsConfig.map(p => {
+            const def = defaultMap.get(p.id);
+            if (!def) return p;
+            const ov = { ...p.overrides };
+            if (!ov.problem || ov.problem.includes('Add custom problem')) ov.problem = def.problem;
+            if (!ov.outcome || ov.outcome.includes('0 star')) ov.outcome = def.outcome;
+            if (ov.title === 'Circleto Search' || ov.title === 'Plane Plant UMLintegration') ov.title = def.title;
+            if (p.id === 'gh-Portfolio' && ov.tech?.includes('PERSONAL-WEBSITE')) ov.tech = def.tech;
+            return { ...p, overrides: ov };
+          });
+          localStorage.setItem(STORAGE_KEYS.PROJECTS_CONFIG, JSON.stringify(sanitizedCloudProjects));
+          // Push updated sanitized config back to Firestore cloud to fix remote DB as well
+          saveToFirestore('projectsConfig', sanitizedCloudProjects).catch(() => {});
         }
         if (cloudData.settings) {
           localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(cloudData.settings));

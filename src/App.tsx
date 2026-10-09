@@ -24,7 +24,8 @@ import {
   Lock,
   Link as LinkIcon,
   X,
-  Maximize2
+  Maximize2,
+  CheckCircle
 } from 'lucide-react';
 import { TempleFrame } from './components/TempleFrame';
 import FaultyTerminal from './components/FaultyTerminal';
@@ -81,6 +82,29 @@ export default function App() {
   const [cvUrl, setCvUrl] = useState<string>('/Resume.pdf');
   const [cvFileName, setCvFileName] = useState<string>('Rajguru_Chiwate_Resume.pdf');
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
+
+  // Contact Form State
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactStatus, setContactStatus] = useState<'idle' | 'success'>('idle');
+
+  // Handle Escape key & body scroll lock for Lightbox Modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && previewImage) {
+        setPreviewImage(null);
+      }
+    };
+    if (previewImage) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [previewImage]);
 
   useEffect(() => {
     // Load from persistence server first (handles port-change data loss)
@@ -217,7 +241,7 @@ export default function App() {
            animate={{ opacity: [0, 1, 1, 0] }}
            transition={{ duration: 1.2, times: [0, 0.4, 0.6, 1] }}
         >
-          <div className={`absolute inset-0 ${theme === 'ancient' ? 'bg-wheat' : 'bg-cyan-500'} opacity-10`} />
+          <div className={`absolute inset-0 ${theme === 'ancient' ? 'bg-[#a68b5a]' : 'bg-cyan-500'} opacity-10`} />
           <motion.div 
             className={`absolute inset-y-0 left-0 w-1/2 ${theme === 'ancient' ? 'bg-marble-white' : 'bg-[#020408]'}`}
             initial={{ x: "-100%" }}
@@ -616,6 +640,7 @@ export default function App() {
                         href={proj.liveDemoUrl || proj.githubUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
                         className="hover:underline transition-colors"
                       >
                         {proj.title}
@@ -760,6 +785,8 @@ export default function App() {
                         <img
                           src={item.imageUrl}
                           alt={`${item.title} photo`}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-auto max-h-[650px] object-contain block mx-auto transition-transform duration-500 group-hover/img:scale-[1.01]"
                           onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
                         />
@@ -907,18 +934,35 @@ export default function App() {
                 <form 
                   onSubmit={(e) => {
                     e.preventDefault();
-                    alert("Message sent successfully!");
+                    if (!contactName.trim() || !contactMessage.trim()) return;
+                    const subject = encodeURIComponent(`Portfolio Inquiry from ${contactName.trim()}`);
+                    const body = encodeURIComponent(
+                      `Name: ${contactName.trim()}\n` +
+                      `Email: ${contactEmail.trim() || 'Not provided'}\n\n` +
+                      `Message:\n${contactMessage.trim()}`
+                    );
+                    window.location.href = `mailto:guruchiwate@gmail.com?subject=${subject}&body=${body}`;
+                    setContactStatus('success');
+                    setTimeout(() => {
+                      setContactName('');
+                      setContactEmail('');
+                      setContactMessage('');
+                      setContactStatus('idle');
+                    }, 5000);
                   }}
-                  className="mt-6 flex flex-col gap-5 relative z-20"
+                  className="mt-6 flex flex-col gap-4 relative z-20 text-left"
                 >
                     <div className="flex flex-col gap-1.5">
-                       <label className={`text-xs tracking-wider uppercase font-semibold transition-colors duration-1000 ${theme === 'ancient' ? 'text-stone-ink/70' : 'text-cyan-400'}`}>
+                       <label htmlFor="contact-name" className={`text-xs tracking-wider uppercase font-semibold transition-colors duration-1000 ${theme === 'ancient' ? 'text-stone-ink/70' : 'text-cyan-400'}`}>
                          Your Name
                        </label>
                        <input 
+                         id="contact-name"
                          type="text" 
                          required
-                         placeholder="Enter your name" 
+                         value={contactName}
+                         onChange={(e) => setContactName(e.target.value)}
+                         placeholder="e.g. Alex Johnson" 
                          className={`w-full p-3 bg-transparent border-b outline-none transition-all duration-500 ${
                            theme === 'ancient' 
                            ? 'border-stone-ink/30 focus:border-gold-accent placeholder:text-stone-ink/40 text-stone-ink' 
@@ -927,12 +971,32 @@ export default function App() {
                        />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                       <label className={`text-xs tracking-wider uppercase font-semibold transition-colors duration-1000 ${theme === 'ancient' ? 'text-stone-ink/70' : 'text-cyan-400'}`}>
+                       <label htmlFor="contact-email" className={`text-xs tracking-wider uppercase font-semibold transition-colors duration-1000 ${theme === 'ancient' ? 'text-stone-ink/70' : 'text-cyan-400'}`}>
+                         Your Email
+                       </label>
+                       <input 
+                         id="contact-email"
+                         type="email" 
+                         value={contactEmail}
+                         onChange={(e) => setContactEmail(e.target.value)}
+                         placeholder="e.g. alex@company.com" 
+                         className={`w-full p-3 bg-transparent border-b outline-none transition-all duration-500 ${
+                           theme === 'ancient' 
+                           ? 'border-stone-ink/30 focus:border-gold-accent placeholder:text-stone-ink/40 text-stone-ink' 
+                           : 'border-cyan-500/30 focus:border-cyan-400 placeholder:text-cyan-500/40 text-cyan-50'
+                         }`}
+                       />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                       <label htmlFor="contact-message" className={`text-xs tracking-wider uppercase font-semibold transition-colors duration-1000 ${theme === 'ancient' ? 'text-stone-ink/70' : 'text-cyan-400'}`}>
                          Your Message
                        </label>
                        <textarea 
+                         id="contact-message"
                          required
-                         placeholder="Enter your message..." 
+                         value={contactMessage}
+                         onChange={(e) => setContactMessage(e.target.value)}
+                         placeholder="Share project details, opportunities, or inquiries..." 
                          rows={4}
                          className={`w-full p-3 bg-transparent border-b outline-none transition-all duration-500 resize-none ${
                            theme === 'ancient' 
@@ -941,9 +1005,21 @@ export default function App() {
                          }`}
                        />
                     </div>
+
+                    {contactStatus === 'success' && (
+                      <div className={`p-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-medium animate-fadeIn ${
+                        theme === 'ancient' 
+                          ? 'bg-gold-accent/10 border-gold-accent/40 text-stone-ink' 
+                          : 'bg-cyan-950/60 border-cyan-500/40 text-cyan-300'
+                      }`}>
+                        <CheckCircle size={16} className="text-emerald-500 shrink-0" />
+                        <span>Opening your email client to dispatch message. You can also write directly to <strong>guruchiwate@gmail.com</strong>.</span>
+                      </div>
+                    )}
+
                     <button 
                       type="submit"
-                      className={`mt-3 px-8 py-3.5 inline-flex items-center gap-2 uppercase tracking-widest text-xs font-bold self-start transition-all duration-500 cursor-pointer ${
+                      className={`mt-2 px-8 py-3.5 inline-flex items-center gap-2 uppercase tracking-widest text-xs font-bold self-start transition-all duration-500 cursor-pointer ${
                         theme === 'ancient' 
                         ? 'border border-stone-ink text-stone-ink hover:bg-stone-ink hover:text-white rounded shadow-sm' 
                         : 'border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black rounded shadow-[0_0_10px_rgba(0,242,255,0.1)] hover:shadow-[0_0_20px_rgba(0,242,255,0.4)]'
@@ -1010,7 +1086,10 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setPreviewImage(null)}
-            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8 cursor-zoom-out"
+            role="dialog"
+            aria-modal="true"
+            aria-label={previewImage.title}
+            className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8 cursor-zoom-out"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
