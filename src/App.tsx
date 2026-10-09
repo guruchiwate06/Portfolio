@@ -325,7 +325,7 @@ export default function App() {
       </div>
 
       {/* 1. Hero Section */}
-      <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden pt-28 sm:pt-32 pb-6 sm:pb-8 scroll-mt-28">
+      <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden pt-24 sm:pt-28 pb-6 sm:pb-8">
         <div className="relative z-10 max-w-5xl px-4 w-full flex flex-col items-center my-auto">
 
           <motion.div
@@ -478,7 +478,11 @@ export default function App() {
             transition={{ delay: 0.5, duration: 0.6 }}
             onClick={() => {
               const aboutEl = document.getElementById('about');
-              if (aboutEl) aboutEl.scrollIntoView({ behavior: 'smooth' });
+              if (aboutEl) {
+                const rect = aboutEl.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                window.scrollTo({ top: Math.round(rect.top + scrollTop), behavior: 'smooth' });
+              }
             }}
           >
             <span className={`text-[10px] uppercase tracking-[0.3em] font-bold transition-colors duration-500 group-hover:text-gold-accent ${theme === 'ancient' ? 'font-primary text-stone-ink/60' : 'font-mono text-cyan-400/70 group-hover:text-cyan-300'}`}>
@@ -493,7 +497,7 @@ export default function App() {
       </section>
 
       {/* 2. About Section */}
-      <section id="about" className="py-20 sm:py-28 md:py-32 px-4 sm:px-6 scroll-mt-24">
+      <section id="about" className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-24 pb-16">
         <motion.div 
           {...fadeUp}
           className="max-w-3xl mx-auto"
@@ -523,7 +527,7 @@ export default function App() {
       </section>
 
       {/* Interactive Straight Loop Marquee between About and Projects */}
-      <section className="relative z-10 overflow-hidden py-4 -my-4 pointer-events-auto">
+      <section className="relative z-10 overflow-hidden py-8 pointer-events-auto">
         <CurvedLoop
           marqueeText="LEARN  </>  BUILD  </>  EVOLVE  </>  "
           speed={1.8}
@@ -539,7 +543,7 @@ export default function App() {
       </section>
 
       {/* 3. Projects Section */}
-      <section id="projects" className="py-20 sm:py-28 md:py-32 px-4 sm:px-6 relative z-10 scroll-mt-24">
+      <section id="projects" className="relative min-h-screen flex flex-col justify-start px-4 sm:px-6 pt-24 pb-20">
         <div className="max-w-5xl mx-auto">
            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 border-b pb-4">
              <h2 className={`text-2xl md:text-4xl uppercase tracking-widest inline-block font-primary font-extrabold transition-colors duration-1000 ${theme === 'ancient' ? 'text-gold-accent border-gold-accent' : 'text-cyan-400 border-cyan-400'}`}>
@@ -711,7 +715,7 @@ export default function App() {
       </section>
 
       {/* 4. Skills Section */}
-      <section id="skills" className="py-20 sm:py-28 md:py-32 overflow-hidden relative scroll-mt-24">
+      <section id="skills" className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-24 pb-16 overflow-hidden">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-16">
             <h2 className={`text-2xl md:text-4xl uppercase tracking-widest border-b pb-2 inline-block font-primary font-extrabold transition-colors duration-1000 ${theme === 'ancient' ? 'text-gold-accent border-gold-accent' : 'text-cyan-400 border-cyan-400'}`}>
@@ -741,7 +745,7 @@ export default function App() {
       </section>
 
       {/* 5. Achievements & Research Section */}
-      <section id="achievements" className="py-20 sm:py-28 md:py-32 px-4 sm:px-6 relative z-10 scroll-mt-24">
+      <section id="achievements" className="relative min-h-screen flex flex-col justify-start px-4 sm:px-6 pt-24 pb-20">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 border-b pb-4">
             <h2 className={`text-2xl md:text-4xl uppercase tracking-widest inline-block font-primary font-extrabold transition-colors duration-1000 ${theme === 'ancient' ? 'text-gold-accent border-gold-accent' : 'text-cyan-400 border-cyan-400'}`}>
@@ -896,7 +900,7 @@ export default function App() {
       </section>
 
       {/* 6. Contact Section */}
-      <section id="contact" className="py-20 sm:py-28 md:py-32 px-4 sm:px-6 relative overflow-hidden scroll-mt-24">
+      <section id="contact" className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-24 pb-16 overflow-hidden">
         <div className="max-w-xl mx-auto relative z-10">
           <div className={`terminal-parchment p-6 sm:p-8 md:p-10 font-sans shadow-2xl relative transition-all duration-1000 ${
             theme === 'ancient' 

@@ -35,15 +35,19 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        const scrollPosition = window.scrollY + 200;
+        const scrollPosition = window.scrollY + window.innerHeight / 3;
         const sections = navItems.map(item => document.getElementById(item.id));
 
         for (let i = sections.length - 1; i >= 0; i--) {
           const section = sections[i];
-          if (section && section.offsetTop <= scrollPosition) {
-            const nextId = navItems[i].id;
-            setActiveSection(prev => prev !== nextId ? nextId : prev);
-            break;
+          if (section) {
+            const rect = section.getBoundingClientRect();
+            const top = rect.top + (window.pageYOffset || document.documentElement.scrollTop);
+            if (top <= scrollPosition) {
+              const nextId = navItems[i].id;
+              setActiveSection(prev => prev !== nextId ? nextId : prev);
+              break;
+            }
           }
         }
         ticking = false;
@@ -57,7 +61,15 @@ export function TempleFrame({ children, theme, onToggleTheme }: TempleFrameProps
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      if (id === 'hero') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const rect = el.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetTop = Math.round(rect.top + scrollTop);
+        window.scrollTo({ top: targetTop, behavior: 'smooth' });
+      }
+      setActiveSection(id);
       setMobileMenuOpen(false);
     }
   };
