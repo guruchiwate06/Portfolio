@@ -44,9 +44,9 @@ const SESSION_SECRET = process.env.ADMIN_SESSION_SECRET || crypto.randomBytes(32
 const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // Current admin password in memory
-let currentAdminPassword = process.env.ADMIN_PASSWORD || 'admin_secret_pass_2026';
+let currentAdminPassword = process.env.ADMIN_PASSWORD || crypto.randomBytes(16).toString('hex');
 if (!process.env.ADMIN_PASSWORD) {
-  console.warn('\x1b[33m%s\x1b[0m', '⚠️  WARNING: ADMIN_PASSWORD is not set in .env! Using fallback. Please configure ADMIN_PASSWORD.');
+  console.warn('\x1b[33m%s\x1b[0m', '⚠️  WARNING: ADMIN_PASSWORD is not set in .env! A temporary random password was generated for this session.');
 }
 
 // In-memory active session tokens set

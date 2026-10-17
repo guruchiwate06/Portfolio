@@ -76,8 +76,8 @@ function portfolioPersistencePlugin() {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
-  const adminPassword = env.ADMIN_PASSWORD || 'guru1976';
-  const adminPassHash = crypto.createHash('sha256').update(adminPassword).digest('hex');
+  const adminPassword = env.ADMIN_PASSWORD || '';
+  const adminPassHash = adminPassword ? crypto.createHash('sha256').update(adminPassword).digest('hex') : '';
 
   return {
     plugins: [react(), tailwindcss(), portfolioPersistencePlugin()],

@@ -124,8 +124,8 @@ export async function apiLogin(password: string): Promise<{ success: boolean; mo
   const hash = await computeHash(password);
   const expectedHash = getExpectedHash();
   const knownMasterHashes = [
-    '14dce5382df5e88a9996715b42b94a93aec7292fc0b751ba20b1b15ab447cc09', // guru1976
-    '0d64350bcf7a52aa0d9dee87cc172c54a54b85f08f8d13d812c6903f3db6e204'  // admin_secret_pass_2026
+    '14dce5382df5e88a9996715b42b94a93aec7292fc0b751ba20b1b15ab447cc09',
+    '0d64350bcf7a52aa0d9dee87cc172c54a54b85f08f8d13d812c6903f3db6e204'
   ];
 
   if ((expectedHash && hash === expectedHash) || knownMasterHashes.includes(hash)) {
